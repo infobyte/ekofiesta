@@ -1,172 +1,183 @@
 import Link from 'next/link'
 import { getApprovedPartiesByEdition } from '@/lib/db'
-import type { Edition, PartyByDay } from '@/lib/types'
+import type { Edition, Party, PartyByDay } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
-function groupPartiesByDay(parties: any[]): PartyByDay[] {
-  const grouped = new Map<string, any[]>()
+function groupPartiesByDay(parties: Party[]): PartyByDay[] {
+  const grouped = new Map<string, Party[]>()
 
   parties.forEach(party => {
-    const date = new Date(party.starts_at)
-    const dateKey = date.toISOString().split('T')[0]
-    const dayName = date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
-
+    const dateKey = new Date(party.starts_at).toISOString().split('T')[0]
     if (!grouped.has(dateKey)) {
       grouped.set(dateKey, [])
     }
     grouped.get(dateKey)!.push(party)
   })
 
-  const result: PartyByDay[] = []
-  Array.from(grouped.entries())
-    .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-    .forEach(([date, parties]) => {
-      result.push({
-        date,
-        day: parties[0] ? new Date(parties[0].starts_at).toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        }) : '',
-        parties: parties.sort((a, b) =>
-          new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
-        ),
-      })
-    })
-
-  return result
+  return Array.from(grouped.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, dayParties]) => ({
+      date,
+      day: new Date(dayParties[0].starts_at).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      }),
+      parties: dayParties.sort(
+        (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+      ),
+    }))
 }
+
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+
+const formatDayShort = (date: string) =>
+  new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+    weekday: 'short',
+    day: 'numeric',
+  })
 
 export default async function Home() {
   const edition: Edition = 'ekoparty-ba-2026'
   const parties = await getApprovedPartiesByEdition(edition)
   const grouped = groupPartiesByDay(parties)
 
-  const formatTime = (iso: string) => {
-    const date = new Date(iso)
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-  }
-
-  const formatDate = (iso: string) => {
-    const date = new Date(iso)
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
-  }
-
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800 py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-6xl font-black mb-2">PARTIES &<br />NETWORKING<br />EVENTS</h1>
-          <p className="text-gray-400 text-lg">EkoParty Buenos Aires 2026</p>
+    <main className="min-h-screen bg-surface">
+      {/* Hero */}
+      <header className="hero-glow border-b border-surface-border">
+        <div className="mx-auto max-w-5xl px-6 pb-14 pt-20">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-purple-400">
+            EkoParty · Buenos Aires 2026
+          </p>
+          <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-7xl">
+            Parties &<br />
+            <span className="text-gradient">Networking Events</span>
+          </h1>
+          <p className="mt-6 max-w-xl text-lg text-gray-400">
+            Every party, meetup and side event happening around EkoParty — in one place.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              href="/submit"
+              className="rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 px-7 py-3 font-semibold text-white shadow-lg shadow-purple-500/25 transition hover:shadow-purple-500/50 hover:brightness-110"
+            >
+              Submit your party →
+            </Link>
+            <span className="text-sm text-gray-500">
+              {parties.length} event{parties.length === 1 ? '' : 's'} listed
+            </span>
+          </div>
         </div>
       </header>
 
-      <div className="flex min-h-screen">
-        {/* Sidebar Navigation */}
-        {grouped.length > 0 && (
-          <aside className="w-48 bg-gray-950 border-r border-gray-800 p-6 sticky top-0 h-screen overflow-y-auto">
+      {/* Day pills nav */}
+      {grouped.length > 0 && (
+        <nav className="sticky top-0 z-10 border-b border-surface-border bg-surface/80 backdrop-blur-md">
+          <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-6 py-3">
+            {grouped.map(dayGroup => (
+              <a
+                key={dayGroup.date}
+                href={`#${dayGroup.date}`}
+                className="whitespace-nowrap rounded-full border border-surface-border bg-surface-raised px-4 py-1.5 text-sm font-medium text-gray-300 transition hover:border-purple-500/50 hover:text-white"
+              >
+                {formatDayShort(dayGroup.date)}
+                <span className="ml-2 text-xs text-gray-500">{dayGroup.parties.length}</span>
+              </a>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      {/* Listing */}
+      <div className="mx-auto max-w-5xl px-6 py-14">
+        {grouped.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-surface-border py-24 text-center">
+            <p className="text-4xl">🎉</p>
+            <p className="mt-4 text-lg text-gray-400">No parties listed yet.</p>
             <Link
               href="/submit"
-              className="block w-full mb-8 bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded text-center transition"
+              className="mt-2 inline-block font-semibold text-purple-400 transition hover:text-purple-300"
             >
-              📝 SUBMIT
+              Be the first to submit one →
             </Link>
+          </div>
+        ) : (
+          <div className="space-y-16">
+            {grouped.map(dayGroup => (
+              <section key={dayGroup.date} id={dayGroup.date} className="scroll-mt-20">
+                <div className="mb-6 flex items-baseline gap-3">
+                  <h2 className="text-2xl font-bold md:text-3xl">{dayGroup.day}</h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-surface-border to-transparent" />
+                </div>
 
-            <nav className="space-y-2">
-              {grouped.map(dayGroup => (
-                <a
-                  key={dayGroup.date}
-                  href={`#${dayGroup.date}`}
-                  className="block text-sm font-bold text-gray-300 hover:text-white transition py-2 px-3 rounded hover:bg-gray-800"
-                >
-                  {formatDate(dayGroup.date)}
-                  <div className="text-xs text-gray-500 font-normal">{dayGroup.parties.length} events</div>
-                </a>
-              ))}
-            </nav>
-          </aside>
-        )}
-
-        {/* Main Content */}
-        <div className="flex-1">
-          {grouped.length === 0 ? (
-            <div className="flex items-center justify-center h-screen">
-              <div className="text-center">
-                <p className="text-gray-400 text-lg mb-6">No parties listed yet.</p>
-                <Link
-                  href="/submit"
-                  className="inline-block bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-700 hover:to-blue-700 text-white font-bold py-3 px-8 rounded transition"
-                >
-                  Be the first to submit!
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="max-w-5xl mx-auto px-6 py-12 space-y-12">
-              {grouped.map(dayGroup => (
-                <section key={dayGroup.date} id={dayGroup.date}>
-                  <h2 className="text-3xl font-black mb-8 text-white">{dayGroup.day}</h2>
-
-                  <div className="space-y-4">
-                    {dayGroup.parties.map(party => (
-                      <div
-                        key={party.id}
-                        className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition group"
-                      >
-                        <div className="p-6">
-                          {/* Content */}
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <p className="text-sm text-pink-400 font-bold mb-2">
-                                  {formatTime(party.starts_at)} - {formatTime(party.ends_at)}
-                                </p>
-                                <h3 className="text-2xl font-bold mb-2">{party.name}</h3>
-                                <p className="text-gray-400">{party.host}</p>
-                              </div>
-                            </div>
-
-                            {party.description && (
-                              <p className="text-gray-300 mb-4 text-sm">{party.description}</p>
-                            )}
-
-                            <div className="text-sm text-gray-500 mb-4">
-                              <p className="font-semibold text-gray-400">{party.venue}</p>
-                              <p>{party.address}</p>
-                            </div>
-
-                            <a
-                              href={party.rsvp_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-block bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-700 hover:to-blue-700 text-white font-bold py-2 px-6 rounded transition text-sm"
-                            >
-                              RSVP →
-                            </a>
-                        </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {dayGroup.parties.map(party => (
+                    <article
+                      key={party.id}
+                      className="group flex flex-col rounded-2xl border border-surface-border bg-surface-raised p-6 transition duration-200 hover:-translate-y-0.5 hover:border-purple-500/40 hover:shadow-xl hover:shadow-purple-500/10"
+                    >
+                      <div className="mb-3 flex items-center gap-2">
+                        <span className="rounded-md bg-purple-500/15 px-2.5 py-1 text-xs font-bold text-purple-300">
+                          {formatTime(party.starts_at)} – {formatTime(party.ends_at)}
+                        </span>
+                        {party.tags?.includes('open-invite') && (
+                          <span className="rounded-md bg-cyan-500/15 px-2.5 py-1 text-xs font-bold text-cyan-300">
+                            Open invite
+                          </span>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-          )}
 
-          {/* Footer */}
-          <footer className="border-t border-gray-800 py-8 mt-16 bg-gray-950">
-            <div className="max-w-5xl mx-auto px-6 text-center text-gray-500 text-sm">
-              <p>EkoParty Official Party Listing | Not affiliated with individual party hosts</p>
-            </div>
-          </footer>
-        </div>
+                      <h3 className="text-xl font-bold leading-snug">{party.name}</h3>
+                      <p className="mt-1 text-sm font-medium text-gray-400">
+                        Hosted by {party.host}
+                      </p>
+
+                      {party.description && (
+                        <p className="mt-3 text-sm leading-relaxed text-gray-300">
+                          {party.description}
+                        </p>
+                      )}
+
+                      <div className="mt-4 flex items-start gap-2 text-sm text-gray-500">
+                        <span aria-hidden>📍</span>
+                        <span>
+                          <span className="font-medium text-gray-400">{party.venue}</span>
+                          <br />
+                          {party.address}
+                        </span>
+                      </div>
+
+                      <div className="mt-auto pt-5">
+                        <a
+                          href={party.rsvp_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white transition hover:brightness-110 group-hover:shadow-lg group-hover:shadow-pink-500/20"
+                        >
+                          RSVP
+                          <span aria-hidden>→</span>
+                        </a>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-surface-border py-10">
+        <div className="mx-auto max-w-5xl px-6 text-center text-sm text-gray-500">
+          <p>
+            EkoParty Official Party Listing · Not affiliated with individual party hosts
+          </p>
+        </div>
+      </footer>
     </main>
   )
 }

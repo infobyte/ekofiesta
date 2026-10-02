@@ -3,6 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
+const inputClass =
+  'w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-white placeholder-gray-600 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20'
+
+const labelClass = 'mb-2 block text-sm font-semibold text-gray-300'
+
 export default function SubmitParty() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -24,7 +29,7 @@ export default function SubmitParty() {
       starts_at: formData.get('starts_at'),
       ends_at: formData.get('ends_at'),
       rsvp_url: formData.get('rsvp_url'),
-      tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()) || [],
+      tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) || [],
       submitter_name: formData.get('submitter_name'),
       submitter_email: formData.get('submitter_email'),
     }
@@ -52,204 +57,176 @@ export default function SubmitParty() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800 py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <Link href="/" className="text-gray-400 hover:text-white mb-4 inline-block transition">
-            ← Back
+    <main className="min-h-screen bg-surface">
+      {/* Hero */}
+      <header className="hero-glow border-b border-surface-border">
+        <div className="mx-auto max-w-3xl px-6 pb-12 pt-16">
+          <Link
+            href="/"
+            className="mb-6 inline-block text-sm text-gray-400 transition hover:text-white"
+          >
+            ← Back to all parties
           </Link>
-          <h1 className="text-5xl font-black">SUBMIT<br />A PARTY</h1>
-          <p className="text-gray-400 mt-2">Add your event to the official EkoParty listing</p>
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+            Submit <span className="text-gradient">your party</span>
+          </h1>
+          <p className="mt-4 text-gray-400">
+            Add your event to the official EkoParty listing. Submissions are reviewed before
+            going live.
+          </p>
         </div>
       </header>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <form onSubmit={handleSubmit} className="bg-gray-950 border border-gray-800 rounded-lg p-8 space-y-8">
-          {/* Success Message */}
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <form onSubmit={handleSubmit} className="space-y-10">
           {success && (
-            <div className="bg-green-900 border border-green-700 rounded p-4 text-green-200">
-              ✅ Party submitted successfully! It will appear after review.
+            <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-green-300">
+              ✅ Party submitted! It will appear on the site once approved.
             </div>
           )}
 
-          {/* Error Message */}
           {error && (
-            <div className="bg-red-900 border border-red-700 rounded p-4 text-red-200">
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
               ❌ {error}
             </div>
           )}
 
           {/* Edition */}
           <div>
-            <label className="block text-sm font-bold text-white mb-3">Edition *</label>
-            <select
-              name="edition"
-              defaultValue="ekoparty-ba-2026"
-              required
-              className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded text-white focus:outline-none focus:border-pink-600"
-            >
+            <label className={labelClass}>Edition *</label>
+            <select name="edition" defaultValue="ekoparty-ba-2026" required className={inputClass}>
               <option value="ekoparty-ba-2026">EkoParty Buenos Aires 2026</option>
               <option value="ekoparty-miami-2026">EkoParty Miami 2026</option>
             </select>
           </div>
 
-          {/* Event Details */}
-          <fieldset className="border border-gray-800 rounded p-6 space-y-4">
-            <legend className="text-lg font-bold text-white mb-4">Event Details</legend>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Event details */}
+          <section>
+            <h2 className="mb-5 text-lg font-bold text-white">Event details</h2>
+            <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-bold text-white mb-2">Event Name *</label>
+                <label className={labelClass}>Event name *</label>
                 <input
                   type="text"
                   name="name"
-                  placeholder="e.g., Red Team Summit Happy Hour"
+                  placeholder="Red Team Happy Hour"
                   required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
+                  className={inputClass}
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-white mb-2">Host/Organization *</label>
+                <label className={labelClass}>Host / organization *</label>
                 <input
                   type="text"
                   name="host"
-                  placeholder="e.g., Acme Security"
+                  placeholder="Acme Security"
                   required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
+                  className={inputClass}
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-white mb-2">Venue Name *</label>
+                <label className={labelClass}>Venue *</label>
                 <input
                   type="text"
                   name="venue"
-                  placeholder="e.g., La Boca Bar & Lounge"
+                  placeholder="La Boca Bar & Lounge"
                   required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
+                  className={inputClass}
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-white mb-2">Address *</label>
+                <label className={labelClass}>Address *</label>
                 <input
                   type="text"
                   name="address"
-                  placeholder="Street address"
+                  placeholder="Balcarce 200, San Telmo"
                   required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
+                  className={inputClass}
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-bold text-white mb-2">Description</label>
+            <div className="mt-5">
+              <label className={labelClass}>Description</label>
               <textarea
                 name="description"
-                placeholder="Tell us about your party... (200 chars max)"
+                placeholder="Tell attendees what to expect (200 chars max)"
                 maxLength={200}
                 rows={3}
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
+                className={inputClass}
               />
             </div>
-          </fieldset>
+          </section>
 
-          {/* Date & Time */}
-          <fieldset className="border border-gray-800 rounded p-6 space-y-4">
-            <legend className="text-lg font-bold text-white mb-4">Date & Time</legend>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Date & time */}
+          <section>
+            <h2 className="mb-5 text-lg font-bold text-white">Date & time</h2>
+            <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-bold text-white mb-2">Start Date & Time *</label>
-                <input
-                  type="datetime-local"
-                  name="starts_at"
-                  required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white focus:outline-none focus:border-pink-600"
-                />
+                <label className={labelClass}>Starts *</label>
+                <input type="datetime-local" name="starts_at" required className={inputClass} />
               </div>
-
               <div>
-                <label className="block text-sm font-bold text-white mb-2">End Date & Time *</label>
-                <input
-                  type="datetime-local"
-                  name="ends_at"
-                  required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white focus:outline-none focus:border-pink-600"
-                />
+                <label className={labelClass}>Ends *</label>
+                <input type="datetime-local" name="ends_at" required className={inputClass} />
               </div>
             </div>
-          </fieldset>
+          </section>
 
-          {/* RSVP & Tags */}
-          <fieldset className="border border-gray-800 rounded p-6 space-y-4">
-            <legend className="text-lg font-bold text-white mb-4">RSVP & Tags</legend>
-
-            <div>
-              <label className="block text-sm font-bold text-white mb-2">RSVP URL *</label>
-              <input
-                type="url"
-                name="rsvp_url"
-                placeholder="https://..."
-                required
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-white mb-2">Tags (comma-separated)</label>
-              <input
-                type="text"
-                name="tags"
-                placeholder="e.g., open-invite, approval-required"
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
-              />
-            </div>
-          </fieldset>
-
-          {/* Submitter Info */}
-          <fieldset className="border border-gray-800 rounded p-6 space-y-4">
-            <legend className="text-lg font-bold text-white mb-4">Your Information</legend>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* RSVP & tags */}
+          <section>
+            <h2 className="mb-5 text-lg font-bold text-white">RSVP & tags</h2>
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-bold text-white mb-2">Your Name *</label>
+                <label className={labelClass}>RSVP URL *</label>
+                <input
+                  type="url"
+                  name="rsvp_url"
+                  placeholder="https://..."
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Tags (comma-separated)</label>
                 <input
                   type="text"
-                  name="submitter_name"
-                  required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-white mb-2">Your Email *</label>
-                <input
-                  type="email"
-                  name="submitter_email"
-                  required
-                  className="w-full px-4 py-2 bg-gray-900 border border-gray-800 rounded text-white placeholder-gray-600 focus:outline-none focus:border-pink-600"
+                  name="tags"
+                  placeholder="open-invite, approval-required"
+                  className={inputClass}
                 />
               </div>
             </div>
-          </fieldset>
+          </section>
 
-          {/* Submit Button */}
-          <div className="flex gap-4 pt-4">
+          {/* Submitter */}
+          <section>
+            <h2 className="mb-5 text-lg font-bold text-white">Your information</h2>
+            <p className="mb-5 text-sm text-gray-500">
+              Only used by moderators to contact you — never shown publicly.
+            </p>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div>
+                <label className={labelClass}>Your name *</label>
+                <input type="text" name="submitter_name" required className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Your email *</label>
+                <input type="email" name="submitter_email" required className={inputClass} />
+              </div>
+            </div>
+          </section>
+
+          {/* Actions */}
+          <div className="flex items-center gap-4 pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-bold py-3 px-6 rounded transition"
+              className="rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 px-8 py-3 font-semibold text-white shadow-lg shadow-purple-500/25 transition hover:shadow-purple-500/50 hover:brightness-110 disabled:opacity-50 disabled:shadow-none"
             >
-              {loading ? 'Submitting...' : '📝 Submit Party'}
+              {loading ? 'Submitting…' : 'Submit party →'}
             </button>
-            <Link
-              href="/"
-              className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded transition"
-            >
+            <Link href="/" className="font-medium text-gray-400 transition hover:text-white">
               Cancel
             </Link>
           </div>
