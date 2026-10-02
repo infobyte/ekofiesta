@@ -2,13 +2,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import type { Dictionary } from '../dictionaries'
+
+type SubmitDict = Dictionary['submit']
 
 const inputClass =
   'w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-white placeholder-gray-600 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20'
 
 const labelClass = 'mb-2 block text-sm font-semibold text-gray-300'
 
-export default function SubmitParty() {
+export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string }) {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -29,7 +32,7 @@ export default function SubmitParty() {
       starts_at: formData.get('starts_at'),
       ends_at: formData.get('ends_at'),
       rsvp_url: formData.get('rsvp_url'),
-      tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean) || [],
+      tags: (formData.get('tags') as string)?.split(',').map(s => s.trim()).filter(Boolean) || [],
       submitter_name: formData.get('submitter_name'),
       submitter_email: formData.get('submitter_email'),
     }
@@ -47,10 +50,10 @@ export default function SubmitParty() {
         setTimeout(() => setSuccess(false), 5000)
       } else {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to submit party')
+        setError(errorData.error || t.errorGeneric)
       }
     } catch (err) {
-      setError('Failed to submit party. Please try again.')
+      setError(t.errorGeneric)
     } finally {
       setLoading(false)
     }
@@ -62,18 +65,15 @@ export default function SubmitParty() {
       <header className="hero-glow border-b border-surface-border">
         <div className="mx-auto max-w-3xl px-6 pb-12 pt-16">
           <Link
-            href="/"
+            href={`/${lang}`}
             className="mb-6 inline-block text-sm text-gray-400 transition hover:text-white"
           >
-            ← Back to all parties
+            {t.back}
           </Link>
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Submit <span className="text-gradient">your party</span>
+            {t.title1} <span className="text-gradient">{t.title2}</span>
           </h1>
-          <p className="mt-4 text-gray-400">
-            Add your event to the official EkoParty listing. Submissions are reviewed before
-            going live.
-          </p>
+          <p className="mt-4 text-gray-400">{t.subtitle}</p>
         </div>
       </header>
 
@@ -82,7 +82,7 @@ export default function SubmitParty() {
         <form onSubmit={handleSubmit} className="space-y-10">
           {success && (
             <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-green-300">
-              ✅ Party submitted! It will appear on the site once approved.
+              {t.success}
             </div>
           )}
 
@@ -94,63 +94,63 @@ export default function SubmitParty() {
 
           {/* Edition */}
           <div>
-            <label className={labelClass}>Edition *</label>
+            <label className={labelClass}>{t.edition}</label>
             <select name="edition" defaultValue="ekoparty-ba-2026" required className={inputClass}>
-              <option value="ekoparty-ba-2026">EkoParty Buenos Aires 2026</option>
-              <option value="ekoparty-miami-2026">EkoParty Miami 2026</option>
+              <option value="ekoparty-ba-2026">{t.editionBA}</option>
+              <option value="ekoparty-miami-2026">{t.editionMiami}</option>
             </select>
           </div>
 
           {/* Event details */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">Event details</h2>
+            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionEvent}</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className={labelClass}>Event name *</label>
+                <label className={labelClass}>{t.eventName}</label>
                 <input
                   type="text"
                   name="name"
-                  placeholder="Red Team Happy Hour"
+                  placeholder={t.eventNamePlaceholder}
                   required
                   className={inputClass}
                 />
               </div>
               <div>
-                <label className={labelClass}>Host / organization *</label>
+                <label className={labelClass}>{t.host}</label>
                 <input
                   type="text"
                   name="host"
-                  placeholder="Acme Security"
+                  placeholder={t.hostPlaceholder}
                   required
                   className={inputClass}
                 />
               </div>
               <div>
-                <label className={labelClass}>Venue *</label>
+                <label className={labelClass}>{t.venue}</label>
                 <input
                   type="text"
                   name="venue"
-                  placeholder="La Boca Bar & Lounge"
+                  placeholder={t.venuePlaceholder}
                   required
                   className={inputClass}
                 />
               </div>
               <div>
-                <label className={labelClass}>Address *</label>
+                <label className={labelClass}>{t.address}</label>
                 <input
                   type="text"
                   name="address"
-                  placeholder="Balcarce 200, San Telmo"
+                  placeholder={t.addressPlaceholder}
                   required
                   className={inputClass}
                 />
               </div>
             </div>
             <div className="mt-5">
-              <label className={labelClass}>Description</label>
+              <label className={labelClass}>{t.description}</label>
               <textarea
                 name="description"
-                placeholder="Tell attendees what to expect (200 chars max)"
+                placeholder={t.descriptionPlaceholder}
                 maxLength={200}
                 rows={3}
                 className={inputClass}
@@ -160,14 +160,14 @@ export default function SubmitParty() {
 
           {/* Date & time */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">Date & time</h2>
+            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionDateTime}</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className={labelClass}>Starts *</label>
+                <label className={labelClass}>{t.starts}</label>
                 <input type="datetime-local" name="starts_at" required className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Ends *</label>
+                <label className={labelClass}>{t.ends}</label>
                 <input type="datetime-local" name="ends_at" required className={inputClass} />
               </div>
             </div>
@@ -175,10 +175,10 @@ export default function SubmitParty() {
 
           {/* RSVP & tags */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">RSVP & tags</h2>
+            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionRsvp}</h2>
             <div className="space-y-5">
               <div>
-                <label className={labelClass}>RSVP URL *</label>
+                <label className={labelClass}>{t.rsvpUrl}</label>
                 <input
                   type="url"
                   name="rsvp_url"
@@ -188,11 +188,11 @@ export default function SubmitParty() {
                 />
               </div>
               <div>
-                <label className={labelClass}>Tags (comma-separated)</label>
+                <label className={labelClass}>{t.tags}</label>
                 <input
                   type="text"
                   name="tags"
-                  placeholder="open-invite, approval-required"
+                  placeholder={t.tagsPlaceholder}
                   className={inputClass}
                 />
               </div>
@@ -201,17 +201,15 @@ export default function SubmitParty() {
 
           {/* Submitter */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">Your information</h2>
-            <p className="mb-5 text-sm text-gray-500">
-              Only used by moderators to contact you — never shown publicly.
-            </p>
+            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionYou}</h2>
+            <p className="mb-5 text-sm text-gray-500">{t.youNote}</p>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className={labelClass}>Your name *</label>
+                <label className={labelClass}>{t.yourName}</label>
                 <input type="text" name="submitter_name" required className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Your email *</label>
+                <label className={labelClass}>{t.yourEmail}</label>
                 <input type="email" name="submitter_email" required className={inputClass} />
               </div>
             </div>
@@ -224,10 +222,13 @@ export default function SubmitParty() {
               disabled={loading}
               className="rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 px-8 py-3 font-semibold text-white shadow-lg shadow-purple-500/25 transition hover:shadow-purple-500/50 hover:brightness-110 disabled:opacity-50 disabled:shadow-none"
             >
-              {loading ? 'Submitting…' : 'Submit party →'}
+              {loading ? t.submitting : t.submitButton}
             </button>
-            <Link href="/" className="font-medium text-gray-400 transition hover:text-white">
-              Cancel
+            <Link
+              href={`/${lang}`}
+              className="font-medium text-gray-400 transition hover:text-white"
+            >
+              {t.cancel}
             </Link>
           </div>
         </form>

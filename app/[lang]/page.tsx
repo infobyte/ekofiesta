@@ -1,10 +1,13 @@
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { getApprovedPartiesByEdition } from '@/lib/db'
 import type { Edition, Party, PartyByDay } from '@/lib/types'
+import { getDictionary, hasLocale, intlLocale } from './dictionaries'
+import LanguageSwitcher from './language-switcher'
 
 export const dynamic = 'force-dynamic'
 
-function groupPartiesByDay(parties: Party[]): PartyByDay[] {
+function groupPartiesByDay(parties: Party[], locale: string): PartyByDay[] {
   const grouped = new Map<string, Party[]>()
 
   parties.forEach(party => {
@@ -19,7 +22,7 @@ function groupPartiesByDay(parties: Party[]): PartyByDay[] {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, dayParties]) => ({
       date,
-      day: new Date(dayParties[0].starts_at).toLocaleDateString('en-US', {
+      day: new Date(dayParties[0].starts_at).toLocaleDateString(locale, {
         weekday: 'long',
         month: 'long',
         day: 'numeric',
@@ -30,45 +33,61 @@ function groupPartiesByDay(parties: Party[]): PartyByDay[] {
     }))
 }
 
-const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ lang: string }>
+}) {
+  const { lang } = await params
+  if (!hasLocale(lang)) notFound()
 
-const formatDayShort = (date: string) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
-    weekday: 'short',
-    day: 'numeric',
-  })
+  const dict = await getDictionary(lang)
+  const t = dict.home
+  const locale = intlLocale[lang]
 
-export default async function Home() {
   const edition: Edition = 'ekoparty-ba-2026'
   const parties = await getApprovedPartiesByEdition(edition)
-  const grouped = groupPartiesByDay(parties)
+  const grouped = groupPartiesByDay(parties, locale)
+
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
+
+  const formatDayShort = (date: string) =>
+    new Date(`${date}T12:00:00`).toLocaleDateString(locale, {
+      weekday: 'short',
+      day: 'numeric',
+    })
+
+  const eventsListed = (parties.length === 1 ? t.eventsListed : t.eventsListedPlural).replace(
+    '{count}',
+    String(parties.length)
+  )
 
   return (
     <main className="min-h-screen bg-surface">
       {/* Hero */}
       <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-5xl px-6 pb-14 pt-20">
+        <div className="mx-auto max-w-5xl px-6 pb-14 pt-10">
+          <div className="mb-10 flex justify-end">
+            <LanguageSwitcher current={lang} />
+          </div>
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-purple-400">
-            EkoParty · Buenos Aires 2026
+            {t.badge}
           </p>
           <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-            Parties &<br />
-            <span className="text-gradient">Networking Events</span>
+            {t.title1}
+            <br />
+            <span className="text-gradient">{t.title2}</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-gray-400">
-            Every party, meetup and side event happening around EkoParty — in one place.
-          </p>
+          <p className="mt-6 max-w-xl text-lg text-gray-400">{t.subtitle}</p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
-              href="/submit"
+              href={`/${lang}/submit`}
               className="rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 px-7 py-3 font-semibold text-white shadow-lg shadow-purple-500/25 transition hover:shadow-purple-500/50 hover:brightness-110"
             >
-              Submit your party →
+              {t.submitCta}
             </Link>
-            <span className="text-sm text-gray-500">
-              {parties.length} event{parties.length === 1 ? '' : 's'} listed
-            </span>
+            <span className="text-sm text-gray-500">{eventsListed}</span>
           </div>
         </div>
       </header>
@@ -96,12 +115,12 @@ export default async function Home() {
         {grouped.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-surface-border py-24 text-center">
             <p className="text-4xl">🎉</p>
-            <p className="mt-4 text-lg text-gray-400">No parties listed yet.</p>
+            <p className="mt-4 text-lg text-gray-400">{t.emptyTitle}</p>
             <Link
-              href="/submit"
+              href={`/${lang}/submit`}
               className="mt-2 inline-block font-semibold text-purple-400 transition hover:text-purple-300"
             >
-              Be the first to submit one →
+              {t.emptyCta}
             </Link>
           </div>
         ) : (
@@ -109,7 +128,7 @@ export default async function Home() {
             {grouped.map(dayGroup => (
               <section key={dayGroup.date} id={dayGroup.date} className="scroll-mt-20">
                 <div className="mb-6 flex items-baseline gap-3">
-                  <h2 className="text-2xl font-bold md:text-3xl">{dayGroup.day}</h2>
+                  <h2 className="text-2xl font-bold capitalize md:text-3xl">{dayGroup.day}</h2>
                   <div className="h-px flex-1 bg-gradient-to-r from-surface-border to-transparent" />
                 </div>
 
@@ -125,14 +144,14 @@ export default async function Home() {
                         </span>
                         {party.tags?.includes('open-invite') && (
                           <span className="rounded-md bg-cyan-500/15 px-2.5 py-1 text-xs font-bold text-cyan-300">
-                            Open invite
+                            {t.openInvite}
                           </span>
                         )}
                       </div>
 
                       <h3 className="text-xl font-bold leading-snug">{party.name}</h3>
                       <p className="mt-1 text-sm font-medium text-gray-400">
-                        Hosted by {party.host}
+                        {t.hostedBy} {party.host}
                       </p>
 
                       {party.description && (
@@ -157,7 +176,7 @@ export default async function Home() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white transition hover:brightness-110 group-hover:shadow-lg group-hover:shadow-pink-500/20"
                         >
-                          RSVP
+                          {t.rsvp}
                           <span aria-hidden>→</span>
                         </a>
                       </div>
@@ -173,9 +192,7 @@ export default async function Home() {
       {/* Footer */}
       <footer className="border-t border-surface-border py-10">
         <div className="mx-auto max-w-5xl px-6 text-center text-sm text-gray-500">
-          <p>
-            EkoParty Official Party Listing · Not affiliated with individual party hosts
-          </p>
+          <p>{t.footer}</p>
         </div>
       </footer>
     </main>
