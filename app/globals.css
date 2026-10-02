@@ -9,10 +9,16 @@
 }
 
 html {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
 }
 
 body {
-  background-color: #faf7f0;
-  color: #1a1a1a;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Gradient utilities */
+.gradient-pink-blue {
+  background: linear-gradient(135deg, #ec4899 0%, #3b82f6 100%);
 }

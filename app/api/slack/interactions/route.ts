@@ -53,9 +53,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Acknowledge the interaction immediately
+    // Update the original message to show approval/rejection
+    const blocks = [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `🎉 *${party.name}*\n${actionType === 'approve' ? '✅ APPROVED' : '❌ REJECTED'} by <@${userId}>`,
+        },
+      },
+      {
+        type: 'section',
+        fields: [
+          { type: 'mrkdwn', text: `*Host:*\n${party.host}` },
+          { type: 'mrkdwn', text: `*Venue:*\n${party.venue}` },
+        ],
+      },
+    ]
+
+    // Acknowledge with updated message
     return NextResponse.json({
       response_type: 'in_channel',
+      replace_original: true,
+      blocks: blocks,
       text: actionType === 'approve'
         ? `✅ Party "${party.name}" approved by <@${userId}>`
         : `❌ Party "${party.name}" rejected by <@${userId}>`,
