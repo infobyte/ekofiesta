@@ -1,0 +1,14 @@
+{
+  "name": "eko-party-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for EkoParty party listing and agenda management",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  }
+}

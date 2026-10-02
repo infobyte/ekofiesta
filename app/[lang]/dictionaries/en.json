@@ -1,4 +1,12 @@
 {
+  "agenda": {
+    "badge": "EkoParty · Buenos Aires 2026",
+    "title1": "Official",
+    "title2": "Schedule",
+    "subtitle": "Full program of talks, workshops, villages and activities at EkoParty 2026.",
+    "backParties": "Back to parties",
+    "sourceNote": "Sample data — official source: ekoparty.org/agenda-2026/"
+  },
   "home": {
     "badge": "EkoParty · Buenos Aires 2026",
     "title1": "Parties &",
@@ -11,7 +19,10 @@
     "emptyCta": "Be the first to submit one →",
     "hostedBy": "Hosted by",
     "openInvite": "Open invite",
+    "approvalRequired": "Approval required",
     "rsvp": "RSVP",
+    "navParties": "Parties",
+    "navAgenda": "Schedule",
     "footer": "EkoParty Official Party Listing · Not affiliated with individual party hosts"
   },
   "submit": {

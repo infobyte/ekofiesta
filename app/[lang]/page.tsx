@@ -67,8 +67,20 @@ export default async function Home({
     <main className="min-h-screen bg-surface">
       {/* Hero */}
       <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-5xl px-6 pb-14 pt-10">
-          <div className="mb-10 flex justify-end">
+        <div className="mx-auto max-w-7xl px-6 pb-14 pt-10">
+          <div className="mb-8 flex items-center justify-between gap-4">
+            {/* Page tab nav */}
+            <div className="flex items-center gap-1 rounded-full border border-surface-border bg-surface-raised p-1">
+              <span className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-1.5 text-xs font-bold text-white">
+                {t.navParties}
+              </span>
+              <Link
+                href={`/${lang}/agenda`}
+                className="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-400 transition hover:text-white"
+              >
+                {t.navAgenda}
+              </Link>
+            </div>
             <LanguageSwitcher current={lang} />
           </div>
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-purple-400">
@@ -95,7 +107,7 @@ export default async function Home({
       {/* Day pills nav */}
       {grouped.length > 0 && (
         <nav className="sticky top-0 z-10 border-b border-surface-border bg-surface/80 backdrop-blur-md">
-          <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-6 py-3">
+          <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-6 py-3">
             {grouped.map(dayGroup => (
               <a
                 key={dayGroup.date}
@@ -111,7 +123,7 @@ export default async function Home({
       )}
 
       {/* Listing */}
-      <div className="mx-auto max-w-5xl px-6 py-14">
+      <div className="mx-auto max-w-7xl px-6 py-14">
         {grouped.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-surface-border py-24 text-center">
             <p className="text-4xl">🎉</p>
@@ -132,19 +144,24 @@ export default async function Home({
                   <div className="h-px flex-1 bg-gradient-to-r from-surface-border to-transparent" />
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {dayGroup.parties.map(party => (
                     <article
                       key={party.id}
                       className="group flex flex-col rounded-2xl border border-surface-border bg-surface-raised p-6 transition duration-200 hover:-translate-y-0.5 hover:border-purple-500/40 hover:shadow-xl hover:shadow-purple-500/10"
                     >
-                      <div className="mb-3 flex items-center gap-2">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
                         <span className="rounded-md bg-purple-500/15 px-2.5 py-1 text-xs font-bold text-purple-300">
                           {formatTime(party.starts_at)} – {formatTime(party.ends_at)}
                         </span>
                         {party.tags?.includes('open-invite') && (
                           <span className="rounded-md bg-cyan-500/15 px-2.5 py-1 text-xs font-bold text-cyan-300">
                             {t.openInvite}
+                          </span>
+                        )}
+                        {party.tags?.includes('approval-required') && (
+                          <span className="rounded-md bg-yellow-500/15 px-2.5 py-1 text-xs font-bold text-yellow-300">
+                            {t.approvalRequired}
                           </span>
                         )}
                       </div>
@@ -191,7 +208,7 @@ export default async function Home({
 
       {/* Footer */}
       <footer className="border-t border-surface-border py-10">
-        <div className="mx-auto max-w-5xl px-6 text-center text-sm text-gray-500">
+        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-500">
           <p>{t.footer}</p>
         </div>
       </footer>
