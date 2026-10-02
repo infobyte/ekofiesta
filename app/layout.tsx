@@ -14,9 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="min-h-screen bg-gradient-to-br from-eko-50 via-white to-eko-100">
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   )
