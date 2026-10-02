@@ -121,9 +121,8 @@ export default async function Home() {
                         key={party.id}
                         className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition group"
                       >
-                        <div className="flex flex-col md:flex-row">
+                        <div className="p-6">
                           {/* Content */}
-                          <div className="flex-1 p-6">
                             <div className="flex items-start justify-between mb-4">
                               <div>
                                 <p className="text-sm text-pink-400 font-bold mb-2">
@@ -151,14 +150,6 @@ export default async function Home() {
                             >
                               RSVP →
                             </a>
-                          </div>
-
-                          {/* Logo Placeholder */}
-                          <div className="w-32 h-32 bg-gray-800 border-l border-gray-800 flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="text-xs text-gray-500 font-bold">{party.host.substring(0, 3).toUpperCase()}</div>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     ))}
