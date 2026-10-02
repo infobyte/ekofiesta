@@ -2,9 +2,9 @@
 
 @theme {
   --font-sans: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
-  --color-surface: #0b0b12;
-  --color-surface-raised: #13131d;
-  --color-surface-border: #26263a;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f7f7fc;
+  --color-surface-border: #e4e4ed;
 }
 
 * {
@@ -14,25 +14,26 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #0b0b12;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #111827;
 }
 
 /* Subtle glow backdrop for the hero */
 .hero-glow {
   background:
-    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(168, 85, 247, 0.18), transparent),
-    radial-gradient(ellipse 50% 40% at 80% 10%, rgba(34, 211, 238, 0.12), transparent);
+    radial-gradient(ellipse 70% 60% at 30% 0%, rgba(168, 85, 247, 0.10), transparent),
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(34, 211, 238, 0.07), transparent),
+    radial-gradient(ellipse 40% 30% at 60% 0%, rgba(236, 72, 153, 0.06), transparent);
 }
 
 /* Gradient text */
 .text-gradient {
-  background: linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #22d3ee 100%);
+  background: linear-gradient(90deg, #9333ea 0%, #ec4899 50%, #06b6d4 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

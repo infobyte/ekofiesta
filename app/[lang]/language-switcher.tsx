@@ -25,8 +25,8 @@ export default function LanguageSwitcher({ current }: { current: string }) {
           href={pathFor(code)}
           className={
             code === current
-              ? 'rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-1 text-xs font-bold text-white'
-              : 'rounded-full px-3 py-1 text-xs font-semibold text-gray-400 transition hover:text-white'
+              ? 'rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-3 py-1 text-xs font-bold text-white'
+              : 'rounded-full px-3 py-1 text-xs font-semibold text-gray-500 transition hover:text-gray-900'
           }
         >
           {label}

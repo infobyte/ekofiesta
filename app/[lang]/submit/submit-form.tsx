@@ -7,9 +7,9 @@ import type { Dictionary } from '../dictionaries'
 type SubmitDict = Dictionary['submit']
 
 const inputClass =
-  'w-full rounded-xl border border-surface-border bg-surface px-4 py-2.5 text-white placeholder-gray-600 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20'
+  'w-full rounded-xl border border-surface-border bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20'
 
-const labelClass = 'mb-2 block text-sm font-semibold text-gray-300'
+const labelClass = 'mb-2 block text-sm font-semibold text-gray-700'
 
 export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string }) {
   const [loading, setLoading] = useState(false)
@@ -66,14 +66,14 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
         <div className="mx-auto max-w-3xl px-6 pb-12 pt-16">
           <Link
             href={`/${lang}`}
-            className="mb-6 inline-block text-sm text-gray-400 transition hover:text-white"
+            className="mb-6 inline-block text-sm text-gray-500 transition hover:text-gray-900"
           >
             {t.back}
           </Link>
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
             {t.title1} <span className="text-gradient">{t.title2}</span>
           </h1>
-          <p className="mt-4 text-gray-400">{t.subtitle}</p>
+          <p className="mt-4 text-gray-500">{t.subtitle}</p>
         </div>
       </header>
 
@@ -81,13 +81,13 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
       <div className="mx-auto max-w-3xl px-6 py-12">
         <form onSubmit={handleSubmit} className="space-y-10">
           {success && (
-            <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-green-300">
+            <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-green-800">
               {t.success}
             </div>
           )}
 
           {error && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+            <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800">
               ❌ {error}
             </div>
           )}
@@ -103,7 +103,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
 
           {/* Event details */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionEvent}</h2>
+            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionEvent}</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className={labelClass}>{t.eventName}</label>
@@ -160,7 +160,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
 
           {/* Date & time */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionDateTime}</h2>
+            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionDateTime}</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className={labelClass}>{t.starts}</label>
@@ -175,7 +175,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
 
           {/* RSVP & tags */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionRsvp}</h2>
+            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionRsvp}</h2>
             <div className="space-y-5">
               <div>
                 <label className={labelClass}>{t.rsvpUrl}</label>
@@ -201,7 +201,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
 
           {/* Submitter */}
           <section>
-            <h2 className="mb-5 text-lg font-bold text-white">{t.sectionYou}</h2>
+            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionYou}</h2>
             <p className="mb-5 text-sm text-gray-500">{t.youNote}</p>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
@@ -220,13 +220,13 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
             <button
               type="submit"
               disabled={loading}
-              className="rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 px-8 py-3 font-semibold text-white shadow-lg shadow-purple-500/25 transition hover:shadow-purple-500/50 hover:brightness-110 disabled:opacity-50 disabled:shadow-none"
+              className="rounded-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 px-8 py-3 font-semibold text-white shadow-lg shadow-purple-200 transition hover:shadow-purple-300 hover:brightness-110 disabled:opacity-50 disabled:shadow-none"
             >
               {loading ? t.submitting : t.submitButton}
             </button>
             <Link
               href={`/${lang}`}
-              className="font-medium text-gray-400 transition hover:text-white"
+              className="font-medium text-gray-500 transition hover:text-gray-900"
             >
               {t.cancel}
             </Link>

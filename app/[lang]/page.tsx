@@ -67,55 +67,59 @@ export default async function Home({
     <main className="min-h-screen bg-surface">
       {/* Hero */}
       <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-7xl px-6 pb-14 pt-10">
-          <div className="mb-8 flex items-center justify-between gap-4">
-            {/* Page tab nav */}
+        <div className="mx-auto max-w-7xl px-6 pb-16 pt-8">
+          {/* Top bar */}
+          <div className="mb-10 flex items-center justify-between gap-4">
             <div className="flex items-center gap-1 rounded-full border border-surface-border bg-surface-raised p-1">
-              <span className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-1.5 text-xs font-bold text-white">
+              <span className="rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-1.5 text-xs font-bold text-white">
                 {t.navParties}
               </span>
               <Link
                 href={`/${lang}/agenda`}
-                className="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-400 transition hover:text-white"
+                className="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-500 transition hover:text-gray-900"
               >
                 {t.navAgenda}
               </Link>
             </div>
             <LanguageSwitcher current={lang} />
           </div>
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-purple-400">
-            {t.badge}
-          </p>
-          <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-            {t.title1}
-            <br />
-            <span className="text-gradient">{t.title2}</span>
-          </h1>
-          <p className="mt-6 max-w-xl text-lg text-gray-400">{t.subtitle}</p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              href={`/${lang}/submit`}
-              className="rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 px-7 py-3 font-semibold text-white shadow-lg shadow-purple-500/25 transition hover:shadow-purple-500/50 hover:brightness-110"
-            >
-              {t.submitCta}
-            </Link>
-            <span className="text-sm text-gray-500">{eventsListed}</span>
+
+          {/* Centered hero content */}
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-purple-600">
+              {t.badge}
+            </p>
+            <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-7xl">
+              {t.title1}
+              <br />
+              <span className="text-gradient">{t.title2}</span>
+            </h1>
+            <p className="mx-auto mt-6 max-w-lg text-lg text-gray-500">{t.subtitle}</p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Link
+                href={`/${lang}/submit`}
+                className="rounded-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 px-7 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:shadow-purple-500/40 hover:brightness-110"
+              >
+                {t.submitCta}
+              </Link>
+              <span className="text-sm text-gray-400">{eventsListed}</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Day pills nav */}
       {grouped.length > 0 && (
-        <nav className="sticky top-0 z-10 border-b border-surface-border bg-surface/80 backdrop-blur-md">
+        <nav className="sticky top-0 z-10 border-b border-surface-border bg-white/90 backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-6 py-3">
             {grouped.map(dayGroup => (
               <a
                 key={dayGroup.date}
                 href={`#${dayGroup.date}`}
-                className="whitespace-nowrap rounded-full border border-surface-border bg-surface-raised px-4 py-1.5 text-sm font-medium text-gray-300 transition hover:border-purple-500/50 hover:text-white"
+                className="whitespace-nowrap rounded-full border border-surface-border bg-surface-raised px-4 py-1.5 text-sm font-medium text-gray-600 transition hover:border-purple-400 hover:text-gray-900"
               >
                 {formatDayShort(dayGroup.date)}
-                <span className="ml-2 text-xs text-gray-500">{dayGroup.parties.length}</span>
+                <span className="ml-2 text-xs text-gray-400">{dayGroup.parties.length}</span>
               </a>
             ))}
           </div>
@@ -127,10 +131,10 @@ export default async function Home({
         {grouped.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-surface-border py-24 text-center">
             <p className="text-4xl">🎉</p>
-            <p className="mt-4 text-lg text-gray-400">{t.emptyTitle}</p>
+            <p className="mt-4 text-lg text-gray-500">{t.emptyTitle}</p>
             <Link
               href={`/${lang}/submit`}
-              className="mt-2 inline-block font-semibold text-purple-400 transition hover:text-purple-300"
+              className="mt-2 inline-block font-semibold text-purple-600 transition hover:text-purple-500"
             >
               {t.emptyCta}
             </Link>
@@ -140,7 +144,7 @@ export default async function Home({
             {grouped.map(dayGroup => (
               <section key={dayGroup.date} id={dayGroup.date} className="scroll-mt-20">
                 <div className="mb-6 flex items-baseline gap-3">
-                  <h2 className="text-2xl font-bold capitalize md:text-3xl">{dayGroup.day}</h2>
+                  <h2 className="text-2xl font-bold capitalize text-gray-900 md:text-3xl">{dayGroup.day}</h2>
                   <div className="h-px flex-1 bg-gradient-to-r from-surface-border to-transparent" />
                 </div>
 
@@ -148,31 +152,31 @@ export default async function Home({
                   {dayGroup.parties.map(party => (
                     <article
                       key={party.id}
-                      className="group flex flex-col rounded-2xl border border-surface-border bg-surface-raised p-6 transition duration-200 hover:-translate-y-0.5 hover:border-purple-500/40 hover:shadow-xl hover:shadow-purple-500/10"
+                      className="group flex flex-col rounded-2xl border border-surface-border bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-lg hover:shadow-purple-100"
                     >
                       <div className="mb-3 flex flex-wrap items-center gap-2">
-                        <span className="rounded-md bg-purple-500/15 px-2.5 py-1 text-xs font-bold text-purple-300">
+                        <span className="rounded-md bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">
                           {formatTime(party.starts_at)} – {formatTime(party.ends_at)}
                         </span>
                         {party.tags?.includes('open-invite') && (
-                          <span className="rounded-md bg-cyan-500/15 px-2.5 py-1 text-xs font-bold text-cyan-300">
+                          <span className="rounded-md bg-cyan-100 px-2.5 py-1 text-xs font-bold text-cyan-700">
                             {t.openInvite}
                           </span>
                         )}
                         {party.tags?.includes('approval-required') && (
-                          <span className="rounded-md bg-yellow-500/15 px-2.5 py-1 text-xs font-bold text-yellow-300">
+                          <span className="rounded-md bg-yellow-100 px-2.5 py-1 text-xs font-bold text-yellow-700">
                             {t.approvalRequired}
                           </span>
                         )}
                       </div>
 
-                      <h3 className="text-xl font-bold leading-snug">{party.name}</h3>
-                      <p className="mt-1 text-sm font-medium text-gray-400">
+                      <h3 className="text-xl font-bold leading-snug text-gray-900">{party.name}</h3>
+                      <p className="mt-1 text-sm font-medium text-gray-500">
                         {t.hostedBy} {party.host}
                       </p>
 
                       {party.description && (
-                        <p className="mt-3 text-sm leading-relaxed text-gray-300">
+                        <p className="mt-3 text-sm leading-relaxed text-gray-600">
                           {party.description}
                         </p>
                       )}
@@ -180,7 +184,7 @@ export default async function Home({
                       <div className="mt-4 flex items-start gap-2 text-sm text-gray-500">
                         <span aria-hidden>📍</span>
                         <span>
-                          <span className="font-medium text-gray-400">{party.venue}</span>
+                          <span className="font-medium text-gray-700">{party.venue}</span>
                           <br />
                           {party.address}
                         </span>
@@ -191,7 +195,7 @@ export default async function Home({
                           href={party.rsvp_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white transition hover:brightness-110 group-hover:shadow-lg group-hover:shadow-pink-500/20"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-5 py-2 text-sm font-semibold text-white transition hover:brightness-110 group-hover:shadow-md group-hover:shadow-pink-200"
                         >
                           {t.rsvp}
                           <span aria-hidden>→</span>
@@ -207,8 +211,8 @@ export default async function Home({
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-surface-border py-10">
-        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-500">
+      <footer className="border-t border-surface-border bg-surface-raised py-10">
+        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-400">
           <p>{t.footer}</p>
         </div>
       </footer>
