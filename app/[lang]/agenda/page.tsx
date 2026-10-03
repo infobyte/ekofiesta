@@ -10,30 +10,60 @@ export async function generateStaticParams() {
   return [{ lang: 'es' }, { lang: 'en' }, { lang: 'pt' }]
 }
 
-const roomColorMap: Record<string, { dot: string; badge: string; time: string }> = {
-  'maintrack':           { dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-700', time: 'text-purple-600' },
-  'sala-d':              { dot: 'bg-red-400',    badge: 'bg-red-100 text-red-700',       time: 'text-red-500' },
-  'sala-c1':             { dot: 'bg-blue-500',   badge: 'bg-blue-100 text-blue-700',     time: 'text-blue-600' },
-  'sala-c2':             { dot: 'bg-cyan-500',   badge: 'bg-cyan-100 text-cyan-700',     time: 'text-cyan-600' },
-  'sala-c3':             { dot: 'bg-green-500',  badge: 'bg-green-100 text-green-700',   time: 'text-green-600' },
-  'hack-the-talent-zone':{ dot: 'bg-pink-500',   badge: 'bg-pink-100 text-pink-700',     time: 'text-pink-500' },
-  'sala-a1':             { dot: 'bg-orange-400', badge: 'bg-orange-100 text-orange-700', time: 'text-orange-500' },
-  'sala-a2':             { dot: 'bg-amber-400',  badge: 'bg-amber-100 text-amber-700',   time: 'text-amber-600' },
-  'sala-a3':             { dot: 'bg-indigo-500', badge: 'bg-indigo-100 text-indigo-700', time: 'text-indigo-600' },
-  'sala-a4':             { dot: 'bg-lime-500',   badge: 'bg-lime-100 text-lime-700',     time: 'text-lime-600' },
-  'sala-v1':             { dot: 'bg-violet-500', badge: 'bg-violet-100 text-violet-700', time: 'text-violet-600' },
-  'sala-e':              { dot: 'bg-rose-400',   badge: 'bg-rose-100 text-rose-700',     time: 'text-rose-500' },
+// ── Color palette per room ─────────────────────────────────────────────────
+
+const roomStyle: Record<string, { header: string; dot: string; card: string; border: string; time: string }> = {
+  'maintrack':            { header: 'bg-purple-600 text-white',       dot: 'bg-purple-500',  card: 'bg-purple-50 border-l-2 border-purple-400', border: 'border-purple-200', time: 'text-purple-600' },
+  'sala-d':               { header: 'bg-red-500 text-white',          dot: 'bg-red-400',     card: 'bg-red-50 border-l-2 border-red-400',       border: 'border-red-200',   time: 'text-red-500' },
+  'sala-c1':              { header: 'bg-blue-600 text-white',         dot: 'bg-blue-500',    card: 'bg-blue-50 border-l-2 border-blue-400',     border: 'border-blue-200',  time: 'text-blue-600' },
+  'sala-c2':              { header: 'bg-cyan-600 text-white',         dot: 'bg-cyan-500',    card: 'bg-cyan-50 border-l-2 border-cyan-400',     border: 'border-cyan-200',  time: 'text-cyan-600' },
+  'sala-c3':              { header: 'bg-green-600 text-white',        dot: 'bg-green-500',   card: 'bg-green-50 border-l-2 border-green-400',   border: 'border-green-200', time: 'text-green-600' },
+  'hack-the-talent-zone': { header: 'bg-pink-500 text-white',         dot: 'bg-pink-500',    card: 'bg-pink-50 border-l-2 border-pink-400',     border: 'border-pink-200',  time: 'text-pink-500' },
+  'sala-a1':              { header: 'bg-orange-500 text-white',       dot: 'bg-orange-400',  card: 'bg-orange-50 border-l-2 border-orange-400', border: 'border-orange-200',time: 'text-orange-500' },
+  'sala-a2':              { header: 'bg-amber-500 text-white',        dot: 'bg-amber-400',   card: 'bg-amber-50 border-l-2 border-amber-400',   border: 'border-amber-200', time: 'text-amber-600' },
+  'sala-a3':              { header: 'bg-indigo-600 text-white',       dot: 'bg-indigo-500',  card: 'bg-indigo-50 border-l-2 border-indigo-400', border: 'border-indigo-200',time: 'text-indigo-600' },
+  'sala-a4':              { header: 'bg-lime-600 text-white',         dot: 'bg-lime-500',    card: 'bg-lime-50 border-l-2 border-lime-400',     border: 'border-lime-200',  time: 'text-lime-600' },
+  'sala-v1':              { header: 'bg-violet-600 text-white',       dot: 'bg-violet-500',  card: 'bg-violet-50 border-l-2 border-violet-400', border: 'border-violet-200',time: 'text-violet-600' },
+  'sala-e':               { header: 'bg-rose-500 text-white',         dot: 'bg-rose-400',    card: 'bg-rose-50 border-l-2 border-rose-400',     border: 'border-rose-200',  time: 'text-rose-500' },
 }
 
-const typeLabels: Record<string, { es: string; en: string; pt: string; cls: string }> = {
-  lightning: { es: '⚡ Lightning', en: '⚡ Lightning', pt: '⚡ Lightning', cls: 'bg-yellow-100 text-yellow-700' },
-  workshop:  { es: '🛠 Workshop',  en: '🛠 Workshop',  pt: '🛠 Workshop',  cls: 'bg-cyan-100 text-cyan-700' },
-  panel:     { es: '💬 Panel',     en: '💬 Panel',     pt: '💬 Painel',   cls: 'bg-green-100 text-green-700' },
+const fallbackStyle = { header: 'bg-gray-500 text-white', dot: 'bg-gray-400', card: 'bg-gray-50 border-l-2 border-gray-300', border: 'border-gray-200', time: 'text-gray-500' }
+
+function rs(id: string) { return roomStyle[id] ?? fallbackStyle }
+
+// ── Grid math ──────────────────────────────────────────────────────────────
+
+const SLOT = 5       // minutes per CSS grid row
+const SLOT_PX = 11   // px per slot → 132px/hour
+
+function parseMin(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
 }
 
-function rc(id: string) {
-  return roomColorMap[id] ?? { dot: 'bg-gray-400', badge: 'bg-gray-100 text-gray-600', time: 'text-gray-500' }
+function buildDayGrid(day: AgendaDay) {
+  const all = day.rooms.flatMap(r => r.items)
+  if (!all.length) return null
+
+  const startMin = Math.floor(Math.min(...all.map(i => parseMin(i.time_start))) / 60) * 60
+  const endMin   = Math.ceil( Math.max(...all.map(i => parseMin(i.time_end)))   / 60) * 60
+
+  const toRow = (t: string) => Math.round((parseMin(t) - startMin) / SLOT) + 2 // row 1 = header
+
+  const numSlots = (endMin - startMin) / SLOT
+
+  const hourMarks: { label: string; row: number }[] = []
+  for (let m = startMin; m <= endMin; m += 60) {
+    hourMarks.push({
+      label: `${String(Math.floor(m / 60)).padStart(2, '0')}:00`,
+      row: (m - startMin) / SLOT + 2,
+    })
+  }
+
+  return { toRow, numSlots, hourMarks, startMin }
 }
+
+// ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function AgendaPage({ params }: { params: Params }) {
   const { lang } = await params
@@ -50,7 +80,7 @@ export default async function AgendaPage({ params }: { params: Params }) {
       {/* Hero */}
       <header className="hero-glow border-b border-surface-border">
         <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-10">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6">
             <Link href={`/${lang}`} className="text-sm text-gray-500 transition hover:text-gray-900">
               ← {t.backParties}
             </Link>
@@ -63,7 +93,6 @@ export default async function AgendaPage({ params }: { params: Params }) {
             <span className="text-gradient block">{t.title2}</span>
           </h1>
           <p className="mt-3 max-w-xl text-base text-gray-500 sm:mt-4 sm:text-lg">{t.subtitle}</p>
-          <p className="mt-3 text-xs text-gray-400">{t.sourceNote}</p>
         </div>
       </header>
 
@@ -77,125 +106,145 @@ export default async function AgendaPage({ params }: { params: Params }) {
               className="whitespace-nowrap rounded-full border border-surface-border bg-surface-raised px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-purple-400 hover:text-gray-900 sm:px-4 sm:text-sm"
             >
               {dayLabel(day)}
-              <span className="ml-1.5 text-xs text-gray-400">
-                {day.rooms.reduce((n, r) => n + r.items.length, 0)}
-              </span>
             </a>
           ))}
         </div>
       </nav>
 
-      {/* Agenda listing */}
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
-        <div className="space-y-20">
-          {agenda.map(day => (
+      {/* Day grids */}
+      <div className="space-y-16 py-10 sm:py-14">
+        {agenda.map(day => {
+          const grid = buildDayGrid(day)
+          if (!grid) return null
+          const { toRow, numSlots, hourMarks } = grid
+          const rooms = day.rooms
+
+          const TIME_COL = 52   // px
+          const ROOM_COL = 188  // px min per room
+
+          return (
             <section key={day.id} id={day.id} className="scroll-mt-20">
-              {/* Day header */}
-              <div className="mb-5 flex items-baseline gap-3">
-                <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">{dayLabel(day)}</h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-surface-border to-transparent" />
+              {/* Day heading */}
+              <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                <div className="mb-4 flex items-baseline gap-3">
+                  <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">{dayLabel(day)}</h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-surface-border to-transparent" />
+                  <span className="text-xs text-gray-400">
+                    ← {lang === 'en' ? 'scroll to see all rooms' : lang === 'pt' ? 'deslize para ver todas as salas' : 'deslizá para ver todas las salas'} →
+                  </span>
+                </div>
               </div>
 
-              {/* Room quick-nav pills */}
-              <div className="mb-8 flex flex-wrap gap-2">
-                {day.rooms.map(room => {
-                  const c = rc(room.id)
-                  return (
-                    <a
-                      key={room.id}
-                      href={`#${day.id}-${room.id}`}
-                      className="flex items-center gap-1.5 rounded-full border border-surface-border bg-white px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-purple-300 hover:text-gray-900"
-                    >
-                      <span className={`h-2 w-2 shrink-0 rounded-full ${c.dot}`} />
-                      {room.name}
-                      <span className="text-gray-400">{room.items.length}</span>
-                    </a>
-                  )
-                })}
-              </div>
+              {/* Schedule grid */}
+              <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                <div className="overflow-x-auto rounded-2xl border border-surface-border shadow-sm">
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: `${TIME_COL}px repeat(${rooms.length}, minmax(${ROOM_COL}px, 1fr))`,
+                      gridTemplateRows: `40px repeat(${numSlots}, ${SLOT_PX}px)`,
+                      minWidth: TIME_COL + rooms.length * ROOM_COL,
+                    }}
+                  >
+                    {/* ── Header row ── */}
+                    {/* Time header */}
+                    <div
+                      style={{ gridColumn: 1, gridRow: 1 }}
+                      className="sticky left-0 z-20 flex items-center justify-center bg-gray-100 text-[10px] font-bold uppercase tracking-wider text-gray-500"
+                    />
+                    {/* Room headers */}
+                    {rooms.map((room, ri) => (
+                      <div
+                        key={room.id}
+                        style={{ gridColumn: ri + 2, gridRow: 1 }}
+                        className={`flex items-center justify-center px-2 text-center text-xs font-bold ${rs(room.id).header}`}
+                      >
+                        {room.name}
+                      </div>
+                    ))}
 
-              {/* Room sections */}
-              <div className="space-y-10">
-                {day.rooms.map(room => (
-                  <RoomSection
-                    key={room.id}
-                    dayId={day.id}
-                    room={room}
-                    lang={lang}
-                  />
-                ))}
+                    {/* ── Hour grid lines + time labels ── */}
+                    {hourMarks.map(({ label, row }) => (
+                      <div key={label} style={{ gridColumn: `1 / ${rooms.length + 2}`, gridRow: row }} className="contents">
+                        {/* Time label */}
+                        <div
+                          style={{ gridColumn: 1, gridRow: row }}
+                          className="sticky left-0 z-10 flex items-start justify-end border-t border-gray-200 bg-gray-50 pr-2 pt-0.5 font-mono text-[10px] font-semibold text-gray-400"
+                        >
+                          {label}
+                        </div>
+                        {/* Horizontal rule across all room columns */}
+                        {rooms.map((_, ri) => (
+                          <div
+                            key={ri}
+                            style={{ gridColumn: ri + 2, gridRow: row }}
+                            className="border-t border-gray-100 bg-white"
+                          />
+                        ))}
+                      </div>
+                    ))}
+
+                    {/* ── Background fill for between-hour slots ── */}
+                    {/* (rooms get white bg from the hour-line divs; we need filler for non-hour rows) */}
+                    {/* Time column sticky background */}
+                    <div
+                      style={{ gridColumn: 1, gridRow: `2 / ${numSlots + 2}` }}
+                      className="sticky left-0 z-10 bg-gray-50"
+                    />
+
+                    {/* ── Talk cards ── */}
+                    {rooms.map((room, ri) =>
+                      room.items.map(item => {
+                        const startRow = toRow(item.time_start)
+                        const endRow   = toRow(item.time_end)
+                        const spanRows = endRow - startRow
+                        const c = rs(room.id)
+                        return (
+                          <div
+                            key={item.id}
+                            style={{
+                              gridColumn: ri + 2,
+                              gridRow: `${startRow} / ${endRow}`,
+                              height: spanRows * SLOT_PX - 2,
+                              margin: '1px',
+                              zIndex: 5,
+                            }}
+                            className={`overflow-hidden rounded-lg p-1.5 shadow-sm ${c.card}`}
+                          >
+                            <p className={`font-mono text-[9px] font-semibold ${c.time}`}>
+                              {item.time_start}
+                            </p>
+                            <p className="mt-0.5 text-[11px] font-bold leading-tight text-gray-900"
+                               style={{ display: '-webkit-box', WebkitLineClamp: spanRows >= 9 ? 3 : 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {item.title}
+                            </p>
+                            {item.speakers.length > 0 && spanRows >= 7 && (
+                              <p className="mt-0.5 truncate text-[10px] text-gray-500">
+                                {item.speakers[0]}{item.speakers.length > 1 ? ` +${item.speakers.length - 1}` : ''}
+                              </p>
+                            )}
+                            {item.language === 'en' && (
+                              <span className="mt-0.5 inline-block rounded bg-blue-100 px-1 text-[8px] font-bold text-blue-700">EN</span>
+                            )}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
-          ))}
-        </div>
+          )
+        })}
       </div>
 
       {/* Footer */}
       <footer className="border-t border-surface-border bg-surface-raised py-10">
         <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-400">
           <p>{dict.home.footer}</p>
+          <p className="mt-1 text-xs">{t.sourceNote}</p>
         </div>
       </footer>
     </main>
-  )
-}
-
-function RoomSection({ dayId, room, lang }: { dayId: string; room: AgendaRoom; lang: string }) {
-  const c = rc(room.id)
-  return (
-    <section id={`${dayId}-${room.id}`} className="scroll-mt-20">
-      {/* Room header */}
-      <div className="mb-3 flex items-center gap-2.5">
-        <span className={`h-3 w-3 shrink-0 rounded-full ${c.dot}`} />
-        <h3 className="text-base font-bold text-gray-800 sm:text-lg">{room.name}</h3>
-        <div className="h-px flex-1 bg-surface-border" />
-      </div>
-
-      {/* Talk list */}
-      <div className="space-y-2 pl-5">
-        {room.items.map(item => <TalkCard key={item.id} item={item} roomId={room.id} lang={lang} />)}
-      </div>
-    </section>
-  )
-}
-
-function TalkCard({ item, roomId, lang }: { item: AgendaItem; roomId: string; lang: string }) {
-  const c = rc(roomId)
-  const tl = typeLabels[item.type]
-  const typeBadgeLabel = tl
-    ? (lang === 'en' ? tl.en : lang === 'pt' ? tl.pt : tl.es)
-    : null
-
-  return (
-    <article className="group rounded-xl border border-surface-border bg-white p-3.5 transition duration-200 hover:border-purple-200 hover:shadow-sm sm:flex sm:gap-4 sm:p-4">
-      {/* Time */}
-      <div className="mb-2 flex items-center gap-2 sm:mb-0 sm:w-24 sm:shrink-0 sm:flex-col sm:items-end sm:gap-0.5">
-        <span className={`font-mono text-sm font-semibold ${c.time}`}>{item.time_start}</span>
-        <span className="font-mono text-xs text-gray-400">– {item.time_end}</span>
-      </div>
-
-      {/* Content */}
-      <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-          {typeBadgeLabel && tl && (
-            <span className={`rounded px-1.5 py-0.5 text-xs font-semibold ${tl.cls}`}>
-              {typeBadgeLabel}
-            </span>
-          )}
-          {item.village && (
-            <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${c.badge}`}>
-              {item.village}
-            </span>
-          )}
-          {item.language === 'en' && (
-            <span className="rounded bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-700">EN</span>
-          )}
-        </div>
-        <h4 className="text-sm font-semibold leading-snug text-gray-900 sm:text-base">{item.title}</h4>
-        {item.speakers.length > 0 && (
-          <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">{item.speakers.join(', ')}</p>
-        )}
-      </div>
-    </article>
   )
 }
