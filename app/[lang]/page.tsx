@@ -80,6 +80,12 @@ export default async function Home({
               >
                 {t.navAgenda}
               </Link>
+              <Link
+                href={`/${lang}/mcp`}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-gray-500 transition hover:text-gray-900 sm:px-4"
+              >
+                {t.navMcp}
+              </Link>
             </div>
             <LanguageSwitcher current={lang} />
           </div>
