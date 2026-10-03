@@ -2,7 +2,7 @@
 /**
  * EkoParty MCP Server
  *
- * Tools exposed:
+ * Party tools (Supabase):
  *   fetch_eko_agenda     — Fetches https://ekoparty.org/agenda-2026/
  *   list_parties         — Lists parties from Supabase
  *   get_pending_parties  — Lists parties awaiting moderation
