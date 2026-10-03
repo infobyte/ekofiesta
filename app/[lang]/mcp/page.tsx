@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale } from '../dictionaries'
+import SiteNav from '../site-nav'
 
 type Params = Promise<{ lang: string }>
 
@@ -79,38 +79,24 @@ export default async function McpPage({ params }: { params: Params }) {
 
   return (
     <main className="min-h-screen bg-surface">
-      {/* Hero */}
-      <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-10">
-          {/* Top bar */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-1 rounded-full border border-surface-border bg-surface-raised p-1">
-              <Link
-                href={`/${lang}`}
-                className="rounded-full px-3 py-1.5 text-xs font-semibold text-gray-500 transition hover:text-gray-900 sm:px-4"
-              >
-                {th.navParties}
-              </Link>
-              <Link
-                href={`/${lang}/agenda`}
-                className="rounded-full px-3 py-1.5 text-xs font-semibold text-gray-500 transition hover:text-gray-900 sm:px-4"
-              >
-                {th.navAgenda}
-              </Link>
-              <span className="rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-3 py-1.5 text-xs font-bold text-white sm:px-4">
-                {th.navMcp}
-              </span>
-            </div>
-          </div>
+      <SiteNav
+        lang={lang}
+        active="mcp"
+        labels={{ parties: th.navParties, agenda: th.navAgenda, mcp: th.navMcp }}
+      />
 
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-purple-600 sm:text-sm sm:tracking-[0.25em]">
+      {/* Hero */}
+      <header className="hero-mesh">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 pt-12 sm:px-6 sm:pb-14 sm:pt-16">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-surface-border bg-white/80 py-1.5 pl-3 pr-4 text-xs font-medium text-gray-600 shadow-sm backdrop-blur">
+            <span className="live-dot h-2 w-2 rounded-full bg-green-500" />
             {t.badge}
-          </p>
-          <h1 className="text-[1.6rem] font-bold leading-[1.15] tracking-tight text-gray-900 sm:text-5xl md:text-6xl lg:text-7xl">
+          </div>
+          <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tighter text-gray-900 sm:text-6xl md:text-7xl">
             <span className="block">{t.title1}</span>
             <span className="text-gradient block">{t.title2}</span>
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-gray-500 sm:mt-4 sm:text-lg">{t.subtitle}</p>
+          <p className="mt-4 max-w-2xl text-pretty text-base text-gray-500 sm:mt-5 sm:text-xl">{t.subtitle}</p>
         </div>
       </header>
 
@@ -205,9 +191,12 @@ npm install`}</code>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-surface-border bg-surface-raised py-10">
-        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-400">
-          <p>{th.footer}</p>
+      <footer className="border-t border-surface-border bg-white py-12">
+        <div className="mx-auto max-w-7xl px-6 text-center">
+          <p className="text-base font-bold tracking-tight">
+            eko<span className="text-gradient">.party</span>
+          </p>
+          <p className="mt-2 text-sm text-gray-400">{th.footer}</p>
         </div>
       </footer>
     </main>

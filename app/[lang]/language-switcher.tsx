@@ -18,19 +18,21 @@ export default function LanguageSwitcher({ current }: { current: string }) {
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-surface-border bg-surface-raised p-1">
-      {languages.map(({ code, label }) => (
-        <Link
-          key={code}
-          href={pathFor(code)}
-          className={
-            code === current
-              ? 'rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-3 py-1 text-xs font-bold text-white'
-              : 'rounded-full px-3 py-1 text-xs font-semibold text-gray-500 transition hover:text-gray-900'
-          }
-        >
-          {label}
-        </Link>
+    <div className="flex items-center font-mono text-xs">
+      {languages.map(({ code, label }, i) => (
+        <span key={code} className="flex items-center">
+          {i > 0 && <span className="px-1 text-gray-300">/</span>}
+          <Link
+            href={pathFor(code)}
+            className={
+              code === current
+                ? 'font-bold text-gray-900'
+                : 'text-gray-400 transition hover:text-gray-900'
+            }
+          >
+            {label}
+          </Link>
+        </span>
       ))}
     </div>
   )

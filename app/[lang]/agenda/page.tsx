@@ -1,8 +1,8 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale } from '../dictionaries'
+import SiteNav from '../site-nav'
 import { agenda } from './mock-agenda'
-import type { AgendaDay, AgendaRoom, AgendaItem } from './mock-agenda'
+import type { AgendaDay } from './mock-agenda'
 
 type Params = Promise<{ lang: string }>
 
@@ -77,33 +77,35 @@ export default async function AgendaPage({ params }: { params: Params }) {
 
   return (
     <main className="min-h-screen bg-surface">
+      <SiteNav
+        lang={lang}
+        active="agenda"
+        labels={{ parties: dict.home.navParties, agenda: dict.home.navAgenda, mcp: dict.home.navMcp }}
+      />
+
       {/* Hero */}
-      <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-10">
-          <div className="mb-6">
-            <Link href={`/${lang}`} className="text-sm text-gray-500 transition hover:text-gray-900">
-              ← {t.backParties}
-            </Link>
-          </div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-purple-600 sm:text-sm sm:tracking-[0.25em]">
+      <header className="hero-mesh">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10 pt-12 sm:px-6 sm:pb-14 sm:pt-16">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-surface-border bg-white/80 py-1.5 pl-3 pr-4 text-xs font-medium text-gray-600 shadow-sm backdrop-blur">
+            <span className="live-dot h-2 w-2 rounded-full bg-green-500" />
             {t.badge}
-          </p>
-          <h1 className="text-[1.6rem] font-bold leading-[1.15] tracking-tight text-gray-900 sm:text-5xl md:text-6xl lg:text-7xl">
+          </div>
+          <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tighter text-gray-900 sm:text-6xl md:text-7xl">
             <span className="block">{t.title1}</span>
             <span className="text-gradient block">{t.title2}</span>
           </h1>
-          <p className="mt-3 max-w-xl text-base text-gray-500 sm:mt-4 sm:text-lg">{t.subtitle}</p>
+          <p className="mt-4 max-w-xl text-pretty text-base text-gray-500 sm:mt-5 sm:text-xl">{t.subtitle}</p>
         </div>
       </header>
 
       {/* Day pill nav */}
-      <nav className="sticky top-0 z-10 border-b border-surface-border bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
+      <nav className="sticky top-14 z-30 border-b border-surface-border/70 bg-white/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl gap-1.5 overflow-x-auto px-4 py-2.5 sm:px-6">
           {agenda.map(day => (
             <a
               key={day.id}
               href={`#${day.id}`}
-              className="whitespace-nowrap rounded-full border border-surface-border bg-surface-raised px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-purple-400 hover:text-gray-900 sm:px-4 sm:text-sm"
+              className="whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold text-gray-500 transition hover:bg-gray-900 hover:text-white"
             >
               {dayLabel(day)}
             </a>
@@ -123,7 +125,7 @@ export default async function AgendaPage({ params }: { params: Params }) {
           const ROOM_COL = 188  // px min per room
 
           return (
-            <section key={day.id} id={day.id} className="scroll-mt-20">
+            <section key={day.id} id={day.id} className="scroll-mt-32">
               {/* Day heading */}
               <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 <div className="mb-4 flex items-baseline gap-3">
@@ -137,7 +139,7 @@ export default async function AgendaPage({ params }: { params: Params }) {
 
               {/* Schedule grid */}
               <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                <div className="overflow-x-auto rounded-2xl border border-surface-border shadow-sm">
+                <div className="overflow-x-auto rounded-3xl border border-surface-border bg-white shadow-sm">
                   <div
                     style={{
                       display: 'grid',
@@ -239,10 +241,13 @@ export default async function AgendaPage({ params }: { params: Params }) {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-surface-border bg-surface-raised py-10">
-        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-400">
-          <p>{dict.home.footer}</p>
-          <p className="mt-1 text-xs">{t.sourceNote}</p>
+      <footer className="border-t border-surface-border bg-white py-12">
+        <div className="mx-auto max-w-7xl px-6 text-center">
+          <p className="text-base font-bold tracking-tight">
+            eko<span className="text-gradient">.party</span>
+          </p>
+          <p className="mt-2 text-sm text-gray-400">{dict.home.footer}</p>
+          <p className="mt-1 text-xs text-gray-300">{t.sourceNote}</p>
         </div>
       </footer>
     </main>

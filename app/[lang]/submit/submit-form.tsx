@@ -7,7 +7,7 @@ import type { Dictionary } from '../dictionaries'
 type SubmitDict = Dictionary['submit']
 
 const inputClass =
-  'w-full rounded-xl border border-surface-border bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20'
+  'w-full rounded-2xl border border-surface-border bg-white px-4 py-3 text-gray-900 placeholder-gray-300 shadow-sm transition focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10'
 
 const labelClass = 'mb-2 block text-sm font-semibold text-gray-700'
 
@@ -62,24 +62,24 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
   return (
     <main className="min-h-screen bg-surface">
       {/* Hero */}
-      <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-3xl px-4 pb-10 pt-12 sm:px-6 sm:pb-12 sm:pt-16">
+      <header className="hero-mesh">
+        <div className="relative z-10 mx-auto max-w-3xl px-4 pb-10 pt-12 sm:px-6 sm:pb-12 sm:pt-16">
           <Link
             href={`/${lang}`}
             className="mb-6 inline-block text-sm text-gray-500 transition hover:text-gray-900"
           >
             {t.back}
           </Link>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
+          <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tighter text-gray-900 sm:text-5xl md:text-6xl">
             {t.title1} <span className="text-gradient">{t.title2}</span>
           </h1>
-          <p className="mt-4 text-gray-500">{t.subtitle}</p>
+          <p className="mt-4 text-pretty text-gray-500 sm:text-lg">{t.subtitle}</p>
         </div>
       </header>
 
       {/* Form */}
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <form onSubmit={handleSubmit} className="space-y-10">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {success && (
             <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-green-800">
               {t.success}
@@ -93,7 +93,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
           )}
 
           {/* Edition */}
-          <div>
+          <div className="rounded-3xl border border-surface-border bg-white p-6 shadow-sm sm:p-8">
             <label className={labelClass}>{t.edition}</label>
             <select name="edition" defaultValue="ekoparty-ba-2026" required className={inputClass}>
               <option value="ekoparty-ba-2026">{t.editionBA}</option>
@@ -102,8 +102,8 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
           </div>
 
           {/* Event details */}
-          <section>
-            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionEvent}</h2>
+          <section className="rounded-3xl border border-surface-border bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-5 text-lg font-bold tracking-tight text-gray-900">{t.sectionEvent}</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className={labelClass}>{t.eventName}</label>
@@ -159,8 +159,8 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
           </section>
 
           {/* Date & time */}
-          <section>
-            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionDateTime}</h2>
+          <section className="rounded-3xl border border-surface-border bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-5 text-lg font-bold tracking-tight text-gray-900">{t.sectionDateTime}</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className={labelClass}>{t.starts}</label>
@@ -174,8 +174,8 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
           </section>
 
           {/* RSVP & tags */}
-          <section>
-            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionRsvp}</h2>
+          <section className="rounded-3xl border border-surface-border bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-5 text-lg font-bold tracking-tight text-gray-900">{t.sectionRsvp}</h2>
             <div className="space-y-5">
               <div>
                 <label className={labelClass}>{t.rsvpUrl}</label>
@@ -200,8 +200,8 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
           </section>
 
           {/* Submitter */}
-          <section>
-            <h2 className="mb-5 text-lg font-bold text-gray-900">{t.sectionYou}</h2>
+          <section className="rounded-3xl border border-surface-border bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-5 text-lg font-bold tracking-tight text-gray-900">{t.sectionYou}</h2>
             <p className="mb-5 text-sm text-gray-500">{t.youNote}</p>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
@@ -220,7 +220,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
             <button
               type="submit"
               disabled={loading}
-              className="rounded-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 px-8 py-3 font-semibold text-white shadow-lg shadow-purple-200 transition hover:shadow-purple-300 hover:brightness-110 disabled:opacity-50 disabled:shadow-none"
+              className="btn-gradient rounded-full px-8 py-3.5 text-sm font-bold text-white shadow-xl shadow-purple-500/25 disabled:opacity-50 disabled:shadow-none"
             >
               {loading ? t.submitting : t.submitButton}
             </button>

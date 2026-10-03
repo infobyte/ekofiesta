@@ -2,15 +2,10 @@
 
 @theme {
   --font-sans: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
-  --color-surface: #ffffff;
-  --color-surface-raised: #f7f7fc;
-  --color-surface-border: #e4e4ed;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  --color-surface: #fafafa;
+  --color-surface-raised: #ffffff;
+  --color-surface-border: #e7e7ef;
+  --color-ink: #0b0b14;
 }
 
 html {
@@ -19,22 +14,70 @@ html {
 }
 
 body {
-  background-color: #ffffff;
-  color: #111827;
+  background-color: #fafafa;
+  color: #0b0b14;
+  -webkit-font-smoothing: antialiased;
+  /* clip (not hidden): kills horizontal overflow without breaking position:sticky */
+  overflow-x: clip;
 }
 
-/* Subtle glow backdrop for the hero */
-.hero-glow {
+::selection {
+  background: rgba(147, 51, 234, 0.2);
+}
+
+/* Mesh gradient hero backdrop */
+.hero-mesh {
+  position: relative;
   background:
-    radial-gradient(ellipse 70% 60% at 30% 0%, rgba(168, 85, 247, 0.10), transparent),
-    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(34, 211, 238, 0.07), transparent),
-    radial-gradient(ellipse 40% 30% at 60% 0%, rgba(236, 72, 153, 0.06), transparent);
+    radial-gradient(ellipse 50% 45% at 15% 5%, rgba(147, 51, 234, 0.13), transparent 65%),
+    radial-gradient(ellipse 45% 40% at 85% 10%, rgba(6, 182, 212, 0.11), transparent 65%),
+    radial-gradient(ellipse 40% 35% at 55% 0%, rgba(236, 72, 153, 0.09), transparent 60%),
+    linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
 }
 
-/* Gradient text */
+/* Subtle film grain over the hero */
+.hero-mesh::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.045'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Brand gradient text */
 .text-gradient {
-  background: linear-gradient(90deg, #9333ea 0%, #ec4899 50%, #06b6d4 100%);
+  background: linear-gradient(100deg, #9333ea 0%, #ec4899 45%, #06b6d4 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Animated gradient for the CTA */
+.btn-gradient {
+  background: linear-gradient(100deg, #9333ea, #ec4899, #06b6d4, #9333ea);
+  background-size: 300% 100%;
+  transition: background-position 0.6s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+.btn-gradient:hover {
+  background-position: 100% 0;
+  transform: translateY(-1px);
+}
+
+/* Card hover elevation */
+.card-modern {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.card-modern:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px -16px rgba(147, 51, 234, 0.25);
+}
+
+/* Pulsing live dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.live-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }
