@@ -67,16 +67,16 @@ export default async function Home({
     <main className="min-h-screen bg-surface">
       {/* Hero */}
       <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-7xl px-6 pb-16 pt-8">
-          {/* Top bar */}
-          <div className="mb-10 flex items-center justify-between gap-4">
+        <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 sm:pb-16 sm:pt-8">
+          {/* Top bar — stacks on mobile */}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-1 rounded-full border border-surface-border bg-surface-raised p-1">
-              <span className="rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-1.5 text-xs font-bold text-white">
+              <span className="rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-3 py-1.5 text-xs font-bold text-white sm:px-4">
                 {t.navParties}
               </span>
               <Link
                 href={`/${lang}/agenda`}
-                className="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-500 transition hover:text-gray-900"
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-gray-500 transition hover:text-gray-900 sm:px-4"
               >
                 {t.navAgenda}
               </Link>
@@ -85,20 +85,19 @@ export default async function Home({
           </div>
 
           {/* Centered hero content */}
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-purple-600">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-purple-600 sm:mb-4 sm:text-sm sm:tracking-[0.25em]">
               {t.badge}
             </p>
-            <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-              {t.title1}
-              <br />
-              <span className="text-gradient">{t.title2}</span>
+            <h1 className="text-[1.6rem] font-bold leading-[1.15] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+              <span className="block">{t.title1}</span>
+              <span className="text-gradient block">{t.title2}</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-lg text-lg text-gray-500">{t.subtitle}</p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <p className="mx-auto mt-4 max-w-md text-base text-gray-500 sm:mt-6 sm:text-lg">{t.subtitle}</p>
+            <div className="mt-6 flex flex-col items-center gap-3 sm:mt-8 sm:flex-row sm:justify-center sm:gap-4">
               <Link
                 href={`/${lang}/submit`}
-                className="rounded-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 px-7 py-3 font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:shadow-purple-500/40 hover:brightness-110"
+                className="w-full rounded-full bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-500 px-7 py-3 text-center font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:shadow-purple-500/40 hover:brightness-110 sm:w-auto"
               >
                 {t.submitCta}
               </Link>
@@ -111,15 +110,15 @@ export default async function Home({
       {/* Day pills nav */}
       {grouped.length > 0 && (
         <nav className="sticky top-0 z-10 border-b border-surface-border bg-white/90 backdrop-blur-md">
-          <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-6 py-3">
+          <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6">
             {grouped.map(dayGroup => (
               <a
                 key={dayGroup.date}
                 href={`#${dayGroup.date}`}
-                className="whitespace-nowrap rounded-full border border-surface-border bg-surface-raised px-4 py-1.5 text-sm font-medium text-gray-600 transition hover:border-purple-400 hover:text-gray-900"
+                className="whitespace-nowrap rounded-full border border-surface-border bg-surface-raised px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:border-purple-400 hover:text-gray-900 sm:px-4 sm:text-sm"
               >
                 {formatDayShort(dayGroup.date)}
-                <span className="ml-2 text-xs text-gray-400">{dayGroup.parties.length}</span>
+                <span className="ml-1.5 text-xs text-gray-400">{dayGroup.parties.length}</span>
               </a>
             ))}
           </div>
@@ -127,7 +126,7 @@ export default async function Home({
       )}
 
       {/* Listing */}
-      <div className="mx-auto max-w-7xl px-6 py-14">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
         {grouped.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-surface-border py-24 text-center">
             <p className="text-4xl">🎉</p>
@@ -152,7 +151,7 @@ export default async function Home({
                   {dayGroup.parties.map(party => (
                     <article
                       key={party.id}
-                      className="group flex flex-col rounded-2xl border border-surface-border bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-lg hover:shadow-purple-100"
+                      className="group flex flex-col rounded-2xl border border-surface-border bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-lg hover:shadow-purple-100 sm:p-6"
                     >
                       <div className="mb-3 flex flex-wrap items-center gap-2">
                         <span className="rounded-md bg-purple-100 px-2.5 py-1 text-xs font-bold text-purple-700">

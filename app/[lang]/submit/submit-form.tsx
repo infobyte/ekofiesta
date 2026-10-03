@@ -63,7 +63,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
     <main className="min-h-screen bg-surface">
       {/* Hero */}
       <header className="hero-glow border-b border-surface-border">
-        <div className="mx-auto max-w-3xl px-6 pb-12 pt-16">
+        <div className="mx-auto max-w-3xl px-4 pb-10 pt-12 sm:px-6 sm:pb-12 sm:pt-16">
           <Link
             href={`/${lang}`}
             className="mb-6 inline-block text-sm text-gray-500 transition hover:text-gray-900"
@@ -78,7 +78,7 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
       </header>
 
       {/* Form */}
-      <div className="mx-auto max-w-3xl px-6 py-12">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         <form onSubmit={handleSubmit} className="space-y-10">
           {success && (
             <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-green-800">
