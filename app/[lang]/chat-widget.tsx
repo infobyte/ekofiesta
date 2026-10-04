@@ -77,9 +77,7 @@ export default function ChatWidget({ t, lang }: { t: ChatDict; lang: string }) {
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         ) : (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          </svg>
+          <EkoBot size={30} />
         )}
       </button>
 
@@ -87,9 +85,12 @@ export default function ChatWidget({ t, lang }: { t: ChatDict; lang: string }) {
       {open && (
         <div className="fixed bottom-24 right-5 z-50 flex h-[480px] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-surface-border bg-white shadow-2xl">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-pink-500 px-5 py-4 text-white">
-            <p className="text-sm font-bold">{t.title}</p>
-            <p className="mt-0.5 text-xs text-white/80">{t.subtitle}</p>
+          <div className="flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-500 px-5 py-4 text-white">
+            <EkoBot size={34} />
+            <div>
+              <p className="text-sm font-bold">{t.title}</p>
+              <p className="mt-0.5 text-xs text-white/80">{t.subtitle}</p>
+            </div>
           </div>
 
           {/* Messages */}
@@ -136,6 +137,36 @@ export default function ChatWidget({ t, lang }: { t: ChatDict; lang: string }) {
         </div>
       )}
     </>
+  )
+}
+
+/**
+ * ekobot — mascota del chat. Guiños a la eko: antena con el dot verde "live"
+ * del sitio, y una "e" minúscula como boca (el logo eko.party).
+ */
+function EkoBot({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      {/* Antena con dot verde (live) */}
+      <line x1="16" y1="8" x2="16" y2="4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="16" cy="3.4" r="2.1" fill="#22c55e" stroke="rgba(255,255,255,0.9)" strokeWidth="0.9" />
+      {/* Orejas */}
+      <rect x="2.4" y="14" width="2.6" height="6" rx="1.3" fill="currentColor" />
+      <rect x="27" y="14" width="2.6" height="6" rx="1.3" fill="currentColor" />
+      {/* Cabeza */}
+      <rect x="6" y="8" width="20" height="18" rx="6" stroke="currentColor" strokeWidth="2" />
+      {/* Ojos */}
+      <circle cx="12" cy="16" r="2" fill="currentColor" />
+      <circle cx="20" cy="16" r="2" fill="currentColor" />
+      {/* Boca: "e" minúscula de eko.party */}
+      <path
+        d="M18.6 21.6a2.7 2.7 0 1 0-2.7 2.9c1.1 0 1.9-.4 2.4-1M13.3 21.6h5.3"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
   )
 }
 
