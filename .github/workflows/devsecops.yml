@@ -138,6 +138,29 @@ jobs:
           echo "View at: https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
 
 
+  faradai-pentest:
+    name: FaradAI Security Scanner (Manual)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install faraday-cli
+        run: python3 -m pip install --quiet faraday-cli
+      - name: Launch FaradAI Security Scanner
+        env:
+          FARADAY_URL: ${{ secrets.FARADAY_URL }}
+          FARADAY_USER: ${{ secrets.FARADAY_USER }}
+          FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
+        run: |
+          faraday-cli auth -f "$FARADAY_URL" -u "$FARADAY_USER" -p "$FARADAY_PASSWORD"
+          faraday-cli workspace select ekofiesta
+          echo "✓ Authenticated with Faraday"
+          echo "Launching FaradAI Security Scanner on workspace: ekofiesta"
+          echo "Scanner will analyze the application and upload findings to Manaos"
+          echo ""
+          echo "Monitor progress at:"
+          echo "https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
+
   faradai-triage:
     name: FaradAI Triage (Claude Analysis - Manual)
     runs-on: ubuntu-latest
