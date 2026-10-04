@@ -75,6 +75,9 @@ export default async function AgendaPage({ params }: { params: Params }) {
   const dayLabel = (day: AgendaDay) =>
     lang === 'en' ? day.label_en : lang === 'pt' ? day.label_pt : day.label_es
 
+  const calLabel =
+    lang === 'en' ? 'Add to calendar' : lang === 'pt' ? 'Adicionar ao calendário' : 'Agregar al calendario'
+
   return (
     <main className="min-h-screen bg-surface">
       <SiteNav
@@ -211,11 +214,21 @@ export default async function AgendaPage({ params }: { params: Params }) {
                               margin: '1px',
                               zIndex: 5,
                             }}
-                            className={`overflow-hidden rounded-lg p-1.5 shadow-sm ${c.card}`}
+                            className={`group/talk overflow-hidden rounded-lg p-1.5 shadow-sm ${c.card}`}
                           >
-                            <p className={`font-mono text-[9px] font-semibold ${c.time}`}>
-                              {item.time_start}
-                            </p>
+                            <div className="flex items-start justify-between gap-1">
+                              <p className={`font-mono text-[9px] font-semibold ${c.time}`}>
+                                {item.time_start}
+                              </p>
+                              <a
+                                href={`/api/agenda/${item.id}`}
+                                title={calLabel}
+                                aria-label={`${calLabel}: ${item.title}`}
+                                className="-mr-0.5 -mt-0.5 rounded p-0.5 text-[10px] leading-none opacity-30 transition hover:opacity-100 group-hover/talk:opacity-60"
+                              >
+                                📅
+                              </a>
+                            </div>
                             <p className="mt-0.5 text-[11px] font-bold leading-tight text-gray-900"
                                style={{ display: '-webkit-box', WebkitLineClamp: spanRows >= 9 ? 3 : 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                               {item.title}
