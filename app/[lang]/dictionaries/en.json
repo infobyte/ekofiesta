@@ -84,5 +84,17 @@
     "submitting": "Submitting…",
     "submitButton": "Submit party →",
     "cancel": "Cancel"
+  },
+  "chat": {
+    "open": "Open chat",
+    "close": "Close chat",
+    "title": "eko.party assistant",
+    "subtitle": "Ask me about parties, talks and the agenda",
+    "greeting": "Hi! I can tell you about the parties, the talk agenda, and how to use this site. What do you want to know?",
+    "placeholder": "E.g.: which parties are on Wednesday?",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "error": "Something went wrong. Try again.",
+    "rateLimited": "Too many messages. Wait a moment."
   }
 }

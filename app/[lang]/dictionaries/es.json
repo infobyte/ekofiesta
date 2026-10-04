@@ -84,5 +84,17 @@
     "submitting": "Enviando…",
     "submitButton": "Enviar fiesta →",
     "cancel": "Cancelar"
+  },
+  "chat": {
+    "open": "Abrir chat",
+    "close": "Cerrar chat",
+    "title": "Asistente eko.party",
+    "subtitle": "Preguntame sobre fiestas, charlas y la agenda",
+    "greeting": "¡Hola! Puedo contarte sobre las fiestas, la agenda de charlas y cómo usar el sitio. ¿Qué querés saber?",
+    "placeholder": "Ej: ¿qué fiestas hay el miércoles?",
+    "send": "Enviar",
+    "thinking": "Pensando…",
+    "error": "Algo salió mal. Probá de nuevo.",
+    "rateLimited": "Demasiados mensajes seguidos. Esperá un momento."
   }
 }

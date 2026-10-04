@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
 import { notFound } from 'next/navigation'
-import { hasLocale, locales } from './dictionaries'
+import { getDictionary, hasLocale, locales } from './dictionaries'
+import ChatWidget from './chat-widget'
 import '../globals.css'
 
 const spaceGrotesk = Space_Grotesk({
@@ -28,10 +29,13 @@ export default async function RootLayout({
   const { lang } = await params
   if (!hasLocale(lang)) notFound()
 
+  const dict = await getDictionary(lang)
+
   return (
     <html lang={lang} className={spaceGrotesk.variable}>
       <body className="font-sans antialiased">
         {children}
+        <ChatWidget lang={lang} t={dict.chat} />
       </body>
     </html>
   )
