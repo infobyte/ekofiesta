@@ -152,49 +152,86 @@ jobs:
           echo "View at: https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
 
 
+  # Phase 2a — FaradAI active pentest against the deployed target.
+  # Runs the FaradAI cloud agent (id via FARADAI_AGENT_ID, default 2) through
+  # the Faraday REST API. Needs repo variable FARADAI_TARGET (the URL to test).
   faradai-pentest:
-    name: FaradAI Security Scanner (Manual)
+    name: FaradAI Pentest (Manual)
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    env:
+      FARADAY_URL: ${{ secrets.FARADAY_URL }}
+      FARADAY_USER: ${{ secrets.FARADAY_USER }}
+      FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
+      FARADAI_AGENT_ID: ${{ vars.FARADAI_AGENT_ID || '2' }}
+      FARADAI_TARGET: ${{ vars.FARADAI_TARGET }}
+      FARADAY_WORKSPACE: ekofiesta
     steps:
-      - uses: actions/checkout@v4
-      - name: Install faraday-cli
-        run: python3 -m pip install --quiet faraday-cli
-      - name: Launch FaradAI Security Scanner
-        env:
-          FARADAY_URL: ${{ secrets.FARADAY_URL }}
-          FARADAY_USER: ${{ secrets.FARADAY_USER }}
-          FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
+      - name: Launch FaradAI pentest
         run: |
-          faraday-cli auth -f "$FARADAY_URL" -u "$FARADAY_USER" -p "$FARADAY_PASSWORD"
-          faraday-cli workspace select ekofiesta
+          set -euo pipefail
+          if [ -z "${FARADAI_TARGET:-}" ]; then
+            echo "❌ FARADAI_TARGET repo variable not set — nothing to pentest."
+            echo "   Set it in Settings → Secrets and variables → Actions → Variables."
+            exit 1
+          fi
+          BASE="${FARADAY_URL%/}"
+          # 1) login (cookie session)  2) exchange for an API token
+          curl -sS -c /tmp/fcj.txt -X POST "$BASE/_api/login" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$FARADAY_USER\",\"password\":\"$FARADAY_PASSWORD\"}" >/dev/null
+          TOKEN=$(curl -sS -b /tmp/fcj.txt "$BASE/_api/v3/token" | tr -d '"')
           echo "✓ Authenticated with Faraday"
-          echo "Launching FaradAI Security Scanner on workspace: ekofiesta"
-          echo "Scanner will analyze the application and upload findings to Manaos"
-          echo ""
-          echo "Monitor progress at:"
-          echo "https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
+          # 3) launch the FaradAI cloud agent against the target
+          curl -sS -X POST "$BASE/_api/v3/cloud_agents/$FARADAI_AGENT_ID/run" \
+            -H "Authorization: Token $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "args": {
+                "TARGET": "'"$FARADAI_TARGET"'",
+                "INSTRUCTION": "Full web/API pentest: auth, IDOR/BOLA, SQLi, injection, XSS, SSRF, mass assignment, JWT. Validate and chain real exploits.",
+                "MODE": "Dual",
+                "ROUNDS": 40
+              },
+              "workspaces": ["'"$FARADAY_WORKSPACE"'"]
+            }' -w "\nHTTP %{http_code}\n"
+          echo "Monitor: $BASE/#/feed/ws/$FARADAY_WORKSPACE/host/all/vulns"
 
+  # Phase 2b — FaradAI triage: review and validate the vulns the pentest left
+  # in the workspace (WORKSPACE_CONTEXT=true). Runs after the pentest launch.
   faradai-triage:
-    name: FaradAI Triage (Claude Analysis - Manual)
+    name: FaradAI Triage (Manual)
     runs-on: ubuntu-latest
     needs: [ faradai-pentest ]
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    env:
+      FARADAY_URL: ${{ secrets.FARADAY_URL }}
+      FARADAY_USER: ${{ secrets.FARADAY_USER }}
+      FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
+      FARADAI_AGENT_ID: ${{ vars.FARADAI_AGENT_ID || '2' }}
+      FARADAI_TARGET: ${{ vars.FARADAI_TARGET }}
+      FARADAY_WORKSPACE: ekofiesta
     steps:
-      - uses: actions/checkout@v4
-      - name: Install faraday-cli
-        run: python3 -m pip install --quiet faraday-cli
-      - name: Launch FaradAI Triage
-        env:
-          FARADAY_URL: ${{ secrets.FARADAY_URL }}
-          FARADAY_USER: ${{ secrets.FARADAY_USER }}
-          FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
+      - name: Launch FaradAI triage
         run: |
-          faraday-cli auth -f "$FARADAY_URL" -u "$FARADAY_USER" -p "$FARADAY_PASSWORD"
-          faraday-cli workspace select ekofiesta
+          set -euo pipefail
+          BASE="${FARADAY_URL%/}"
+          curl -sS -c /tmp/fcj.txt -X POST "$BASE/_api/login" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$FARADAY_USER\",\"password\":\"$FARADAY_PASSWORD\"}" >/dev/null
+          TOKEN=$(curl -sS -b /tmp/fcj.txt "$BASE/_api/v3/token" | tr -d '"')
           echo "✓ Authenticated with Faraday"
-          echo "Launching FaradAI Triage (Claude analysis) on workspace: ekofiesta"
-          echo "Triage will analyze vulnerabilities and provide recommendations"
-          echo ""
-          echo "Monitor progress at:"
-          echo "https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
+          curl -sS -X POST "$BASE/_api/v3/cloud_agents/$FARADAI_AGENT_ID/run" \
+            -H "Authorization: Token $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "args": {
+                "TARGET": "'"${FARADAI_TARGET:-n/a}"'",
+                "INSTRUCTION": "Triage the existing findings in this workspace: confirm real vulnerabilities, discard false positives, deduplicate, and assign accurate severity.",
+                "MODE": "Dual",
+                "ROUNDS": 20,
+                "WORKSPACE_CONTEXT": true
+              },
+              "workspaces": ["'"$FARADAY_WORKSPACE"'"]
+            }' -w "\nHTTP %{http_code}\n"
+          echo "Monitor: $BASE/#/feed/ws/$FARADAY_WORKSPACE/host/all/vulns"
