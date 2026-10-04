@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { submitParty, getPendingParties } from '@/lib/db'
 import { buildPartyPendingMessage, postToSlack } from '@/lib/slack'
-import type { PartySubmission } from '@/lib/types'
+import { OPEN_EDITIONS } from '@/lib/types'
+import type { Edition, PartySubmission } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +29,14 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+    }
+
+    // Only editions open for submissions (Miami 2027 is announced but not open yet)
+    if (!OPEN_EDITIONS.includes(body.edition as Edition)) {
+      return NextResponse.json(
+        { error: 'This edition is not accepting submissions yet' },
+        { status: 400 }
+      )
     }
 
     // Validate dates

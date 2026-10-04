@@ -59,7 +59,7 @@ const TOOLS = [
       properties: {
         edition: {
           type: 'string',
-          description: 'e.g. "ekoparty-ba-2026" or "ekoparty-miami-2026". Omit for all editions.',
+          description: 'e.g. "ekoparty-ba-2026" or "ekoparty-miami-2027" (Miami not yet open for submissions). Omit for all editions.',
         },
         status: {
           type: 'string',
@@ -104,7 +104,7 @@ const TOOLS = [
       type: 'object',
       required: ['edition', 'name', 'host', 'venue', 'address', 'starts_at', 'ends_at', 'rsvp_url', 'submitter_name', 'submitter_email'],
       properties: {
-        edition: { type: 'string', enum: ['ekoparty-ba-2026', 'ekoparty-miami-2026'] },
+        edition: { type: 'string', enum: ['ekoparty-ba-2026'] },
         name: { type: 'string', description: 'Event name' },
         host: { type: 'string', description: 'Organizing company or person' },
         venue: { type: 'string' },
