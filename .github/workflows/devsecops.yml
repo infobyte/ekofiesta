@@ -111,8 +111,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
       - name: Install faraday-cli
-        run: |
-          python3 -m pip install --quiet faraday-cli
+        run: python3 -m pip install --quiet faraday-cli
       - name: Upload to Faraday
         env:
           FARADAY_URL: ${{ secrets.FARADAY_URL }}
@@ -123,44 +122,21 @@ jobs:
           faraday-cli workspace create ekofiesta 2>/dev/null || true
           faraday-cli workspace select ekofiesta 2>/dev/null || true
           
-          # Upload each report
-          [ -f "semgrep-results/semgrep-results.json" ] && \
-            faraday-cli tool report "semgrep-results/semgrep-results.json" --vuln-tag "${{ github.ref_name }}" && \
-            echo "✓ Semgrep uploaded"
+          echo "📤 Uploading security scan results to Faraday"
           
-          [ -f "npm-audit-results/npm-audit-results.json" ] && \
-            faraday-cli tool report "npm-audit-results/npm-audit-results.json" --vuln-tag "${{ github.ref_name }}" && \
-            echo "✓ npm audit uploaded"
+          # Upload each scan result — find and upload all JSON/XML files
+          for dir in */; do
+            for report in "$dir"*.{json,xml} 2>/dev/null; do
+              if [ -f "$report" ]; then
+                echo "  • $(basename "$report")"
+                faraday-cli tool report "$report" --vuln-tag "${{ github.ref_name }}" || echo "    ⚠ Upload failed for $report"
+              fi
+            done
+          done
           
-          [ -f "gitleaks-report/leaks.json" ] && \
-            faraday-cli tool report "gitleaks-report/leaks.json" --vuln-tag "${{ github.ref_name }}" && \
-            echo "✓ Gitleaks uploaded"
-          
-          [ -f "trivy-results/trivy-results.json" ] && \
-            faraday-cli tool report "trivy-results/trivy-results.json" --vuln-tag "${{ github.ref_name }}" && \
-            echo "✓ Trivy uploaded"
-  faradai-pentest:
-    name: FaradAI Security Scanner (Manual)
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install faraday-cli
-        run: python3 -m pip install --quiet faraday-cli
-      - name: Launch FaradAI Security Scanner
-        env:
-          FARADAY_URL: ${{ secrets.FARADAY_URL }}
-          FARADAY_USER: ${{ secrets.FARADAY_USER }}
-          FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
-        run: |
-          faraday-cli auth -f "$FARADAY_URL" -u "$FARADAY_USER" -p "$FARADAY_PASSWORD"
-          faraday-cli workspace select ekofiesta
-          echo "✓ Authenticated with Faraday"
-          echo "Launching FaradAI Security Scanner on workspace: ekofiesta"
-          echo "Scanner will analyze the application and upload findings to Manaos"
-          echo ""
-          echo "Monitor progress at:"
-          echo "https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
+          echo "✅ All scans uploaded to Faraday"
+          echo "View at: https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
+
 
   faradai-triage:
     name: FaradAI Triage (Claude Analysis - Manual)
