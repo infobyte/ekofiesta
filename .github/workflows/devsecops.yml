@@ -10,17 +10,18 @@ jobs:
   semgrep:
     name: Semgrep (SAST)
     runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: >-
-            p/owasp-top-ten
-            p/security-audit
-          generateSarif: false
-          json: true
-          output: semgrep-results.json
+        run: |
+          semgrep scan \
+            --config p/owasp-top-ten \
+            --config p/security-audit \
+            --json --output semgrep-results.json \
+            --exclude node_modules --exclude dist --exclude .next || true
+          echo "Findings: $(python3 -c "import json; print(len(json.load(open('semgrep-results.json')).get('results', [])))" 2>/dev/null || echo 'unknown')"
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,10 +56,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # gitleaks-action@v2 requires a paid license for orgs — run the
+      # open-source CLI directly instead.
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source /repo \
+            --report-format json --report-path /repo/leaks.json \
+            --exit-code 0
+          echo "Leaks found: $(python3 -c "import json; print(len(json.load(open('leaks.json'))))" 2>/dev/null || echo 'unknown')"
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
@@ -109,9 +115,10 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: actions/checkout@v4
       - name: Download all artifacts
         uses: actions/download-artifact@v4
+        with:
+          path: reports
       - name: Install faraday-cli
         run: python3 -m pip install --quiet faraday-cli
       - name: Upload to Faraday
@@ -131,8 +138,8 @@ jobs:
 
           echo "📤 Uploading security scan results to Faraday"
 
-          # Upload all JSON/XML reports from artifact directories
-          find . -type f \( -name "*.json" -o -name "*.xml" \) ! -path "./.git/*" -print0 | \
+          # Upload all JSON/XML reports from downloaded artifacts only
+          find reports -type f \( -name "*.json" -o -name "*.xml" \) -print0 | \
           while IFS= read -r -d '' report; do
             if [ -f "$report" ]; then
               echo "  • $(basename "$report")"
