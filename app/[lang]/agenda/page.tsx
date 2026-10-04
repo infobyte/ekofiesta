@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale } from '../dictionaries'
 import SiteNav from '../site-nav'
 import { agenda } from './mock-agenda'
-import type { AgendaDay } from './mock-agenda'
+import type { AgendaDay, AgendaItem } from './mock-agenda'
 
 type Params = Promise<{ lang: string }>
 
@@ -61,6 +61,41 @@ function buildDayGrid(day: AgendaDay) {
   }
 
   return { toRow, numSlots, hourMarks, startMin }
+}
+
+// ── Google Calendar link ────────────────────────────────────────────────────
+
+// Argentina is UTC-3 year-round (no DST)
+const ART_OFFSET_HOURS = 3
+
+function toUtcStamp(date: string, time: string): string {
+  const [h, m] = time.split(':').map(Number)
+  const d = new Date(Date.UTC(
+    Number(date.slice(0, 4)),
+    Number(date.slice(5, 7)) - 1,
+    Number(date.slice(8, 10)),
+    h + ART_OFFSET_HOURS,
+    m
+  ))
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
+}
+
+function gcalUrl(day: AgendaDay, item: AgendaItem, roomName: string): string {
+  const details = [
+    item.speakers.length > 0 ? `Speakers: ${item.speakers.join(', ')}` : null,
+    item.village ? `Village: ${item.village}` : null,
+    'ekoparty 2026 — https://ekofiesta.com',
+  ].filter(Boolean).join('\n')
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: item.title,
+    dates: `${toUtcStamp(day.date, item.time_start)}/${toUtcStamp(day.date, item.time_end)}`,
+    details,
+    location: `${roomName} — ekoparty 2026, Buenos Aires`,
+    ctz: 'America/Argentina/Buenos_Aires',
+  })
+  return `https://calendar.google.com/calendar/render?${params}`
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────
@@ -221,7 +256,9 @@ export default async function AgendaPage({ params }: { params: Params }) {
                                 {item.time_start}
                               </p>
                               <a
-                                href={`/api/agenda/${item.id}`}
+                                href={gcalUrl(day, item, room.name)}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 title={calLabel}
                                 aria-label={`${calLabel}: ${item.title}`}
                                 className="-mr-0.5 -mt-0.5 rounded p-0.5 text-[10px] leading-none opacity-30 transition hover:opacity-100 group-hover/talk:opacity-60"
