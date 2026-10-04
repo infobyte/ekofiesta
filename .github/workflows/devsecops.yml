@@ -118,22 +118,26 @@ jobs:
           FARADAY_USER: ${{ secrets.FARADAY_USER }}
           FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
         run: |
+          if [ -z "$FARADAY_URL" ] || [ -z "$FARADAY_USER" ] || [ -z "$FARADAY_PASSWORD" ]; then
+            echo "⚠ Faraday credentials not configured. Skipping upload."
+            exit 0
+          fi
+
           faraday-cli auth -f "$FARADAY_URL" -u "$FARADAY_USER" -p "$FARADAY_PASSWORD"
           faraday-cli workspace create ekofiesta 2>/dev/null || true
           faraday-cli workspace select ekofiesta 2>/dev/null || true
-          
+
           echo "📤 Uploading security scan results to Faraday"
-          
-          # Upload each scan result — find and upload all JSON/XML files
-          for dir in */; do
-            for report in "$dir"*.{json,xml} 2>/dev/null; do
-              if [ -f "$report" ]; then
-                echo "  • $(basename "$report")"
-                faraday-cli tool report "$report" --vuln-tag "${{ github.ref_name }}" || echo "    ⚠ Upload failed for $report"
-              fi
-            done
+
+          # Upload all JSON/XML reports from artifact directories
+          find . -type f \( -name "*.json" -o -name "*.xml" \) ! -path "./.git/*" -print0 | \
+          while IFS= read -r -d '' report; do
+            if [ -f "$report" ]; then
+              echo "  • $(basename "$report")"
+              faraday-cli tool report "$report" --vuln-tag "${{ github.ref_name }}" || echo "    ⚠ Upload failed for $report"
+            fi
           done
-          
+
           echo "✅ All scans uploaded to Faraday"
           echo "View at: https://manaos.apps.faradaysec.com/#/feed/ws/ekofiesta/host/all/vulns"
 
