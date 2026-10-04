@@ -57,7 +57,7 @@ const CONFIG_JSON = `{
   "mcpServers": {
     "eko-party": {
       "command": "node",
-      "args": ["/RUTA/A/eko-party/mcp/server.mjs"],
+      "args": ["/RUTA/A/ekofiesta/mcp/server.mjs"],
       "env": {
         "SUPABASE_URL": "https://xoyklzqycjgwlmspmjdi.supabase.co",
         "SUPABASE_KEY": "sb_publishable_5kLgKgcVfJqsxleOU0eICw_oivAxDYk"
@@ -115,8 +115,8 @@ export default async function McpPage({ params }: { params: Params }) {
             <h2 className="mb-4 text-xl font-bold text-gray-900">{t.step1Title}</h2>
             <div className="overflow-x-auto rounded-xl bg-gray-950 p-5">
               <pre className="text-sm text-green-400">
-                <code>{`git clone https://gitlab.com/faradaysec/eko-party.git
-cd eko-party`}</code>
+                <code>{`git clone https://github.com/infobyte/ekofiesta.git
+cd ekofiesta`}</code>
               </pre>
             </div>
           </section>
@@ -178,7 +178,7 @@ npm install`}</code>
             <h2 className="mb-1 font-bold text-gray-900">{t.sourceTitle}</h2>
             <p className="mb-3 text-sm text-gray-500">{t.sourceBody}</p>
             <a
-              href="https://gitlab.com/faradaysec/eko-party"
+              href="https://github.com/infobyte/ekofiesta"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"

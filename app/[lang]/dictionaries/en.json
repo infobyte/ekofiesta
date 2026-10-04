@@ -47,7 +47,7 @@
     "toolsSubtitle": "Ask Claude any of these actions in natural language:",
     "sourceTitle": "Source code",
     "sourceBody": "The MCP server and the full application are open source:",
-    "sourceLinkLabel": "View on GitLab →"
+    "sourceLinkLabel": "View on GitHub →"
   },
   "submit": {
     "back": "← Back to all parties",

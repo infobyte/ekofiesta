@@ -47,7 +47,7 @@
     "toolsSubtitle": "Pedile a Claude cualquiera de estas acciones en lenguaje natural:",
     "sourceTitle": "Código fuente",
     "sourceBody": "El servidor MCP y toda la aplicación son open source:",
-    "sourceLinkLabel": "Ver en GitLab →"
+    "sourceLinkLabel": "Ver en GitHub →"
   },
   "submit": {
     "back": "← Volver a las fiestas",
