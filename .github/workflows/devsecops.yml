@@ -106,8 +106,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=infobyte_ekofiesta
-            -Dsonar.organization=infobyte
+            -Dsonar.projectKey=faradaysec_ekofiesta
+            -Dsonar.organization=faradaysec
 
   upload-to-faraday:
     name: Upload to Faraday
