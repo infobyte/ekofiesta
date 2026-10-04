@@ -158,7 +158,7 @@ jobs:
   faradai-pentest:
     name: FaradAI Pentest (Manual)
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: github.event_name == 'workflow_dispatch'
     env:
       FARADAY_URL: ${{ secrets.FARADAY_URL }}
       FARADAY_USER: ${{ secrets.FARADAY_USER }}
@@ -203,7 +203,7 @@ jobs:
     name: FaradAI Triage (Manual)
     runs-on: ubuntu-latest
     needs: [ faradai-pentest ]
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: github.event_name == 'workflow_dispatch'
     env:
       FARADAY_URL: ${{ secrets.FARADAY_URL }}
       FARADAY_USER: ${{ secrets.FARADAY_USER }}
