@@ -1,0 +1,141 @@
+name: DevSecOps Security Scan
+
+on:
+  push:
+    branches: [ main, develop, '**' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  semgrep:
+    name: Semgrep (SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/owasp-top-ten
+            p/security-audit
+          generateSarif: false
+          json: true
+          output: semgrep-results.json
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+
+  npm-audit:
+    name: npm Audit (SCA)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: npm audit
+        run: npm audit --json > npm-audit-results.json || true
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-results
+          path: npm-audit-results.json
+
+  gitleaks:
+    name: Gitleaks (Secrets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: leaks.json
+
+  trivy:
+    name: Trivy-fs (Dependency Scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'json'
+          output: 'trivy-results.json'
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results.json
+
+  sonarcloud:
+    name: SonarCloud (Code Quality)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=infobyte_ekofiesta
+            -Dsonar.organization=infobyte
+
+  upload-to-faraday:
+    name: Upload to Faraday
+    needs: [ semgrep, npm-audit, gitleaks, trivy, sonarcloud ]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      - name: Install faraday-cli
+        run: |
+          python3 -m pip install --quiet faraday-cli
+      - name: Upload to Faraday
+        env:
+          FARADAY_URL: ${{ secrets.FARADAY_URL }}
+          FARADAY_USER: ${{ secrets.FARADAY_USER }}
+          FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
+        run: |
+          faraday-cli auth -f "$FARADAY_URL" -u "$FARADAY_USER" -p "$FARADAY_PASSWORD"
+          faraday-cli workspace create ekofiesta 2>/dev/null || true
+          faraday-cli workspace select ekofiesta 2>/dev/null || true
+          
+          # Upload each report
+          [ -f "semgrep-results/semgrep-results.json" ] && \
+            faraday-cli tool report "semgrep-results/semgrep-results.json" --vuln-tag "${{ github.ref_name }}" && \
+            echo "✓ Semgrep uploaded"
+          
+          [ -f "npm-audit-results/npm-audit-results.json" ] && \
+            faraday-cli tool report "npm-audit-results/npm-audit-results.json" --vuln-tag "${{ github.ref_name }}" && \
+            echo "✓ npm audit uploaded"
+          
+          [ -f "gitleaks-report/leaks.json" ] && \
+            faraday-cli tool report "gitleaks-report/leaks.json" --vuln-tag "${{ github.ref_name }}" && \
+            echo "✓ Gitleaks uploaded"
+          
+          [ -f "trivy-results/trivy-results.json" ] && \
+            faraday-cli tool report "trivy-results/trivy-results.json" --vuln-tag "${{ github.ref_name }}" && \
+            echo "✓ Trivy uploaded"
