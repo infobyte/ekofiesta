@@ -1,8 +1,9 @@
 name: FaradAI Triage
 
-# Manual-only. Runs the FaradAI cloud agent in triage mode (WORKSPACE_CONTEXT)
-# over the findings already present in the workspace — validates, dedupes and
-# re-scores them. Independent of the pentest workflow.
+# Manual-only. Runs the dedicated FaradAI Triage cloud agent (id 3, category
+# "AI Triage") over the findings already present in the workspace: reproduces
+# each finding, confirms true positives, auto-closes false positives, dedupes
+# and re-scores (CVSS/CWE). Independent of the pentest workflow.
 on:
   workflow_dispatch:
 
@@ -14,8 +15,8 @@ jobs:
       FARADAY_URL: ${{ secrets.FARADAY_URL }}
       FARADAY_USER: ${{ secrets.FARADAY_USER }}
       FARADAY_PASSWORD: ${{ secrets.FARADAY_PASSWORD }}
-      FARADAI_AGENT_ID: ${{ vars.FARADAI_AGENT_ID || '2' }}
-      FARADAI_TARGET: ${{ vars.FARADAI_TARGET }}
+      # Dedicated triage cloud agent (id 3). Overridable via repo variable.
+      FARADAI_TRIAGE_AGENT_ID: ${{ vars.FARADAI_TRIAGE_AGENT_ID || '3' }}
       FARADAY_WORKSPACE: ekofiesta
     steps:
       - name: Launch FaradAI triage
@@ -27,17 +28,18 @@ jobs:
             -d "{\"email\":\"$FARADAY_USER\",\"password\":\"$FARADAY_PASSWORD\"}" >/dev/null
           TOKEN=$(curl -sS -b /tmp/fcj.txt "$BASE/_api/v3/token" | tr -d '"')
           echo "✓ Authenticated with Faraday"
-          curl -sS -X POST "$BASE/_api/v3/cloud_agents/$FARADAI_AGENT_ID/run" \
+          curl -sS -X POST "$BASE/_api/v3/cloud_agents/$FARADAI_TRIAGE_AGENT_ID/run" \
             -H "Authorization: Token $TOKEN" \
             -H "Content-Type: application/json" \
             -d '{
               "args": {
-                "TARGET": "'"${FARADAI_TARGET:-n/a}"'",
-                "GOAL": "Produce a clean, trustworthy vulnerability set: every remaining finding is a confirmed, reproducible, correctly-scored true positive with no duplicates.",
-                "INSTRUCTION": "Triage existing workspace findings: reproduce each, confirm real exploitable vulns, mark unreproducible/benign as false positives, merge duplicates, and re-score by demonstrated impact (not scanner defaults). Add brief evidence and remediation notes.",
-                "MODE": "Dual",
-                "ROUNDS": 20,
-                "WORKSPACE_CONTEXT": true
+                "WORKSPACES": "'"$FARADAY_WORKSPACE"'",
+                "GOAL": "Clean, trustworthy vulnerability set: reproduce each finding, confirm true positives, auto-close false positives, dedupe, and assign accurate CVSS/CWE severity from demonstrated impact. Keep only real, exploitable issues.",
+                "ROUNDS": 4,
+                "REPRODUCE": true,
+                "AUTO_CLOSE_FP": true,
+                "SEVERITIES": "critical,high,medium,low,info",
+                "LANGUAGE": "en"
               },
               "workspaces": ["'"$FARADAY_WORKSPACE"'"]
             }' -w "\nHTTP %{http_code}\n"
