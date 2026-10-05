@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getApprovedPartiesByEdition } from '@/lib/db'
 import { agenda } from '@/app/[lang]/agenda/mock-agenda'
+import { EKO_FAQ, EKO_GENERAL, EKO_VILLAGES } from '@/lib/eko-info'
 
 // ── Rate limiting (per IP, in-memory — best effort on serverless) ────────────
 
@@ -54,6 +55,23 @@ const tools: Anthropic.Tool[] = [
           description: 'Filter by conference day. Omit to search all days.',
         },
       },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'get_event_info',
+    description:
+      'Get official ekoparty 2026 information from ekoparty.org. Sections: "faq" (tickets and tiers, invoices, accreditation, hours, minors/students, badges, streaming, certificates, lodging, how to get to the CEC, transport, safety recommendations), "villages" (the 41 community villages with topics and contacts), "general" (CTF, SECTF, Live Hacking Event, wardriving, EkoKids, Women Hacks, Startup Zone, speed interviews, official stream). Call this for any logistics or event question not covered by the parties/agenda tools.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        section: {
+          type: 'string',
+          enum: ['faq', 'villages', 'general'],
+          description: 'Which information section to retrieve.',
+        },
+      },
+      required: ['section'],
       additionalProperties: false,
     },
   },
@@ -113,6 +131,15 @@ async function runTool(name: string, input: any): Promise<string> {
     return JSON.stringify(results.slice(0, 60))
   }
 
+  if (name === 'get_event_info') {
+    const sections: Record<string, string> = {
+      faq: EKO_FAQ,
+      villages: EKO_VILLAGES,
+      general: EKO_GENERAL,
+    }
+    return sections[input?.section] || EKO_GENERAL
+  }
+
   return `Unknown tool: ${name}`
 }
 
@@ -126,8 +153,8 @@ function systemPrompt(lang: string): string {
 Site pages you can point users to: /${lang} (parties), /${lang}/agenda (talk schedule), /${lang}/submit (submit a party), /${lang}/mcp (MCP server setup — clone github.com/infobyte/ekofiesta and configure Claude Desktop).
 
 Rules:
-- ONLY answer questions about ekoparty, its agenda, parties, venues, and this site. For anything else, briefly decline and redirect to ekoparty topics.
-- Use the tools to answer about parties or talks — never invent events, times, or speakers. If a tool returns nothing, say so.
+- ONLY answer questions about ekoparty, its agenda, parties, villages, logistics (tickets, venue, transport, hours), and this site. For anything else, briefly decline and redirect to ekoparty topics.
+- Use the tools to answer — never invent events, times, speakers, prices, or policies. get_event_info covers tickets, accreditation, villages, CTFs and logistics (sourced from ekoparty.org). If a tool returns nothing, say so.
 - Answer in ${LANG_NAME[lang] || 'Spanish (Argentina)'}.
 - Be concise: a short paragraph or a small list. No markdown headers.
 - Party submissions are moderated; new parties appear after approval.`
