@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import type { Party, PartySubmission, Edition } from './types'
 
 let supabase: any = null
+let supabaseAdmin: any = null
 
 function getSupabase() {
   if (supabase) return supabase
@@ -19,8 +20,31 @@ function getSupabase() {
   return supabase
 }
 
+// Server-only client for submissions and moderation. With RLS enabled
+// (supabase/migrations/0001_parties_rls.sql) the anon key can no longer read
+// pending rows or update statuses, so these flows need the service role key.
+// Falls back to the anon client so the app keeps working until the key is set.
+function getSupabaseAdmin() {
+  if (supabaseAdmin) return supabaseAdmin
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceKey) {
+    console.warn(
+      'SUPABASE_SERVICE_ROLE_KEY not set — falling back to anon client. Submissions and moderation will break once RLS is enabled.'
+    )
+    return getSupabase()
+  }
+
+  supabaseAdmin = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  })
+  return supabaseAdmin
+}
+
 export async function submitParty(submission: PartySubmission): Promise<Party | null> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await getSupabaseAdmin()
     .from('parties')
     .insert({
       edition: submission.edition,
@@ -65,7 +89,7 @@ export async function getApprovedPartiesByEdition(edition: Edition): Promise<Par
 }
 
 export async function getPendingParties(edition?: Edition): Promise<Party[]> {
-  let query = getSupabase()
+  let query = getSupabaseAdmin()
     .from('parties')
     .select('*')
     .eq('status', 'pending')
@@ -89,7 +113,7 @@ export async function approveParty(
   partyId: string,
   moderatedBy: string
 ): Promise<Party | null> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await getSupabaseAdmin()
     .from('parties')
     .update({
       status: 'approved',
@@ -112,7 +136,7 @@ export async function rejectParty(
   partyId: string,
   moderatedBy: string
 ): Promise<Party | null> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await getSupabaseAdmin()
     .from('parties')
     .update({
       status: 'rejected',
@@ -132,7 +156,7 @@ export async function rejectParty(
 }
 
 export async function getPartyById(partyId: string): Promise<Party | null> {
-  const { data, error } = await getSupabase()
+  const { data, error } = await getSupabaseAdmin()
     .from('parties')
     .select('*')
     .eq('id', partyId)
