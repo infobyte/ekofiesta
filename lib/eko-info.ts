@@ -19,7 +19,7 @@ ACTIVIDADES PRINCIPALES:
 - Speed Interviews (EKOJOBS): entrevistas rápidas de 7 minutos con empresas y sponsors.
 - Women Hacks: paneles, mentorías y charlas por y para mujeres en ciberseguridad. Comunidad de WhatsApp disponible.
 - Startup Zone (nuevo 2026): espacio para empresas emergentes de ciberseguridad. No se requiere funding ni empresa formal.
-- EkoKids: miércoles 7 de octubre, para chicos de 7 a 13 años con adulto acompañante. Robótica, programación, creatividad y seguridad digital. Coordina Sol Argento.
+- EkoKids: miércoles 7 de octubre, para chicos de 7 a 13 años con adulto acompañante. Robótica, programación, creatividad y seguridad digital. Coordina Sol Argento. Inscripción: https://docs.google.com/forms/d/e/1FAIpQLSdneaRxp6jaQpQaNUdvJ2TAApJRzbA296TWXUf1s1a9IfaRJQ/viewform
 - Lado B (stream oficial): Twitch y YouTube, con entrevistas, backstage e invitados.
 - Agenda completa en ekoparty.org/agenda-2026 y app Hacker Tracker para filtrar por tema/sala.
 - Propuestas de actividades/villages: actividades@ekoparty.org. Prensa: prensa@ekoparty.org.
@@ -96,7 +96,7 @@ Listado completo (41):
 - Bug Bounty Argentina — bug bounty (bugbountyvillage@ekoparty.org)
 - Malware Space — análisis de malware (malwarespace.com)
 - Mobile Hacking Space — hacking móvil (mobile.space@ekoparty.org)
-- EkoKids — chicos de 7 a 13 años (ekokids@ekoparty.org)
+- EkoKids — chicos de 7 a 13 años (ekokids@ekoparty.org). Inscripción: https://docs.google.com/forms/d/e/1FAIpQLSdneaRxp6jaQpQaNUdvJ2TAApJRzbA296TWXUf1s1a9IfaRJQ/viewform
 - CRYPT-STEG — criptografía y esteganografía
 - CarHacking Village — hacking de autos
 - Hardware Hacking Village — hardware y radio (radio.space@ekoparty.org)
