@@ -110,7 +110,8 @@ async function runTool(name: string, input: any): Promise<string> {
                 !q ||
                 item.title.toLowerCase().includes(q) ||
                 item.speakers.some(s => s.toLowerCase().includes(q)) ||
-                (item.village || '').toLowerCase().includes(q)
+                (item.village || '').toLowerCase().includes(q) ||
+                room.name.toLowerCase().includes(q)
             )
             .map(item => ({
               day: day.label_es,
