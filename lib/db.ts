@@ -43,6 +43,26 @@ function getSupabaseAdmin() {
   return supabaseAdmin
 }
 
+export interface ChatLogEntry {
+  lang: string
+  ip_hash: string | null
+  question: string
+  response: string | null
+  input_tokens: number | null
+  output_tokens: number | null
+  model: string | null
+  tool_rounds: number | null
+}
+
+// Fire-and-forget log of a chat exchange. Uses the service role key because
+// chat_logs has RLS enabled with no anon policies (0002_chat_logs.sql).
+export async function logChatExchange(entry: ChatLogEntry): Promise<void> {
+  const { error } = await getSupabaseAdmin().from('chat_logs').insert(entry)
+  if (error) {
+    console.error('Failed to log chat exchange:', error)
+  }
+}
+
 export async function submitParty(submission: PartySubmission): Promise<Party | null> {
   const { data, error } = await getSupabaseAdmin()
     .from('parties')

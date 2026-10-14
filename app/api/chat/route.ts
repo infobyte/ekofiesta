@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { getApprovedPartiesByEdition } from '@/lib/db'
+import { createHash } from 'crypto'
+import { getApprovedPartiesByEdition, logChatExchange } from '@/lib/db'
 import { agenda } from '@/app/[lang]/agenda/mock-agenda'
 import { EKO_FAQ, EKO_GENERAL, EKO_VILLAGES } from '@/lib/eko-info'
 
@@ -203,12 +204,21 @@ export async function POST(request: NextRequest) {
   const client = new Anthropic()
   const encoder = new TextEncoder()
 
+  const question = String(history[history.length - 1].content)
+  const ipHash = ip === 'unknown' ? null : createHash('sha256').update(ip).digest('hex').slice(0, 16)
+
   const stream = new ReadableStream({
     async start(controller) {
+      let responseText = ''
+      let inputTokens = 0
+      let outputTokens = 0
+      let rounds = 0
+
       try {
         const messages: Anthropic.MessageParam[] = [...history]
 
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+          rounds = round + 1
           const msgStream = client.messages.stream({
             model: 'claude-haiku-4-5',
             max_tokens: 1024,
@@ -218,10 +228,13 @@ export async function POST(request: NextRequest) {
           })
 
           msgStream.on('text', delta => {
+            responseText += delta
             controller.enqueue(encoder.encode(delta))
           })
 
           const message = await msgStream.finalMessage()
+          inputTokens += message.usage.input_tokens
+          outputTokens += message.usage.output_tokens
 
           if (message.stop_reason !== 'tool_use') break
 
@@ -250,6 +263,22 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         console.error('Chat stream error:', err)
         controller.error(err)
+      } finally {
+        // Log the exchange (never blocks or breaks the response)
+        try {
+          await logChatExchange({
+            lang,
+            ip_hash: ipHash,
+            question,
+            response: responseText || null,
+            input_tokens: inputTokens || null,
+            output_tokens: outputTokens || null,
+            model: 'claude-haiku-4-5',
+            tool_rounds: rounds,
+          })
+        } catch (err) {
+          console.error('Failed to log chat:', err)
+        }
       }
     },
   })
