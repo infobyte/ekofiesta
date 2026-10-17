@@ -47,6 +47,51 @@ export interface PartySubmission {
   submitter_email: string
 }
 
+// ── Ekogroups ────────────────────────────────────────────────────────────────
+
+export type ActivityKind = 'one_shot' | 'monthly'
+
+export type ActivityType = 'meetup' | 'workshop' | 'ctf' | 'talk' | 'social' | 'other'
+
+export const ACTIVITY_TYPES: ActivityType[] = [
+  'meetup',
+  'workshop',
+  'ctf',
+  'talk',
+  'social',
+  'other',
+]
+
+export interface EkogroupActivity {
+  id: string
+  group_slug: string
+  title: string
+  activity_type: ActivityType
+  description: string
+  venue: string
+  address: string
+  signup_url: string
+  kind: ActivityKind
+  // one_shot
+  starts_at: string | null // ISO 8601 timestamp
+  ends_at: string | null
+  // monthly: same calendar day every month
+  day_of_month: number | null // 1-31
+  time_start: string | null // 'HH:MM' local to the group's city
+  time_end: string | null
+  submitter_name: string
+  submitter_email: string
+  status: PartyStatus
+  moderated_by?: string
+  moderated_at?: string
+  created_at: string
+}
+
+export type EkogroupActivitySubmission = Omit<
+  EkogroupActivity,
+  'id' | 'status' | 'moderated_by' | 'moderated_at' | 'created_at'
+>
+
 export interface SlackBlockKitMessage {
   text: string
   blocks: any[]

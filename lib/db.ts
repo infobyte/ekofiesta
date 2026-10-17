@@ -1,5 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Party, PartySubmission, Edition } from './types'
+import type {
+  Party,
+  PartySubmission,
+  Edition,
+  EkogroupActivity,
+  EkogroupActivitySubmission,
+} from './types'
 
 let supabase: any = null
 let supabaseAdmin: any = null
@@ -174,6 +180,85 @@ export async function rejectParty(
 
   return data as Party
 }
+
+// ── Ekogroup activities ──────────────────────────────────────────────────────
+
+export async function submitEkogroupActivity(
+  submission: EkogroupActivitySubmission
+): Promise<EkogroupActivity | null> {
+  const { data, error } = await getSupabaseAdmin()
+    .from('ekogroup_activities')
+    .insert({ ...submission, status: 'pending' })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Failed to submit ekogroup activity:', error)
+    return null
+  }
+
+  return data as EkogroupActivity
+}
+
+export async function getApprovedEkogroupActivities(): Promise<EkogroupActivity[]> {
+  const { data, error } = await getSupabase()
+    .from('ekogroup_activities')
+    .select('*')
+    .eq('status', 'approved')
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('Failed to fetch ekogroup activities:', error)
+    return []
+  }
+
+  return (data || []) as EkogroupActivity[]
+}
+
+export async function getEkogroupActivityById(id: string): Promise<EkogroupActivity | null> {
+  const { data, error } = await getSupabaseAdmin()
+    .from('ekogroup_activities')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    console.error('Failed to fetch ekogroup activity:', error)
+    return null
+  }
+
+  return data as EkogroupActivity
+}
+
+async function moderateEkogroupActivity(
+  id: string,
+  status: 'approved' | 'rejected',
+  moderatedBy: string
+): Promise<EkogroupActivity | null> {
+  const { data, error } = await getSupabaseAdmin()
+    .from('ekogroup_activities')
+    .update({
+      status,
+      moderated_by: moderatedBy,
+      moderated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error(`Failed to ${status === 'approved' ? 'approve' : 'reject'} activity:`, error)
+    return null
+  }
+
+  return data as EkogroupActivity
+}
+
+export const approveEkogroupActivity = (id: string, by: string) =>
+  moderateEkogroupActivity(id, 'approved', by)
+
+export const rejectEkogroupActivity = (id: string, by: string) =>
+  moderateEkogroupActivity(id, 'rejected', by)
 
 export async function getPartyById(partyId: string): Promise<Party | null> {
   const { data, error } = await getSupabaseAdmin()

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createHash } from 'crypto'
-import { getApprovedPartiesByEdition, logChatExchange } from '@/lib/db'
-import { CURRENT_EDITION } from '@/lib/types'
+import {
+  getApprovedPartiesByEdition,
+  getApprovedEkogroupActivities,
+  logChatExchange,
+} from '@/lib/db'
+import { CURRENT_EDITION, type Edition } from '@/lib/types'
+import { EKOGROUPS, getEkogroup } from '@/lib/ekogroups'
 import { agenda } from '@/app/[lang]/agenda/mock-agenda'
 import { EKO_FAQ, EKO_GENERAL, EKO_VILLAGES } from '@/lib/eko-info'
 
@@ -36,8 +41,18 @@ const tools: Anthropic.Tool[] = [
   {
     name: 'get_parties',
     description:
-      'Get the list of approved parties for the current edition (ekoparty Miami, May 2027). Call this when the user asks about parties, events, afterparties, where to go out, or RSVP links.',
-    input_schema: { type: 'object', properties: {}, additionalProperties: false },
+      'Get the list of approved parties for an ekoparty edition. Defaults to the current edition (ekoparty Miami, May 2027). Call this when the user asks about parties, events, afterparties, where to go out, or RSVP links. Pass edition "ekoparty-ba-2026" for the Buenos Aires 2026 archive.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        edition: {
+          type: 'string',
+          enum: ['ekoparty-miami-2027', 'ekoparty-ba-2026'],
+          description: 'Which edition to list. Omit for the current edition (Miami 2027).',
+        },
+      },
+      additionalProperties: false,
+    },
   },
   {
     name: 'search_agenda',
@@ -77,11 +92,29 @@ const tools: Anthropic.Tool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'get_ekogroups',
+    description:
+      'Get the directory of ekogroups (local, self-managed ekoparty communities across Latin America) and their upcoming/recurring activities. Call this when the user asks about ekogroups, local communities, meetups, workshops or CTFs in a specific city/country, how to join a community, or what activities are coming up. Optionally filter by city or country name.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        location: {
+          type: 'string',
+          description:
+            'Optional city or country to filter by (case-insensitive, e.g. "Córdoba", "Perú"). Omit to get all groups and activities.',
+        },
+      },
+      additionalProperties: false,
+    },
+  },
 ]
 
 async function runTool(name: string, input: any): Promise<string> {
   if (name === 'get_parties') {
-    const parties = await getApprovedPartiesByEdition(CURRENT_EDITION)
+    const edition: Edition =
+      input?.edition === 'ekoparty-ba-2026' ? 'ekoparty-ba-2026' : CURRENT_EDITION
+    const parties = await getApprovedPartiesByEdition(edition)
     if (parties.length === 0) return 'No approved parties listed yet.'
     return JSON.stringify(
       parties.map(p => ({
@@ -134,6 +167,54 @@ async function runTool(name: string, input: any): Promise<string> {
     return JSON.stringify(results.slice(0, 60))
   }
 
+  if (name === 'get_ekogroups') {
+    const loc: string = (input?.location || '').toLowerCase()
+    const groups = EKOGROUPS.filter(
+      g =>
+        !loc ||
+        g.city.toLowerCase().includes(loc) ||
+        g.country.toLowerCase().includes(loc) ||
+        g.name.toLowerCase().includes(loc)
+    )
+
+    const activities = await getApprovedEkogroupActivities()
+    const relevant = activities.filter(a => {
+      if (!loc) return true
+      const g = getEkogroup(a.group_slug)
+      return (
+        g &&
+        (g.city.toLowerCase().includes(loc) ||
+          g.country.toLowerCase().includes(loc) ||
+          g.name.toLowerCase().includes(loc))
+      )
+    })
+
+    return JSON.stringify({
+      groups: groups.map(g => ({
+        name: g.name,
+        city: g.city,
+        country: g.country,
+        contact: g.contact ? `${g.contact.type}: ${g.contact.label}` : undefined,
+      })),
+      activities: relevant.map(a => {
+        const g = getEkogroup(a.group_slug)
+        return {
+          title: a.title,
+          group: g?.name || a.group_slug,
+          city: g?.city,
+          type: a.activity_type,
+          schedule:
+            a.kind === 'monthly'
+              ? `Every month on day ${a.day_of_month}${a.time_start ? ` at ${a.time_start}` : ''}`
+              : `${a.starts_at}`,
+          venue: a.venue || undefined,
+          signup_url: a.signup_url || undefined,
+        }
+      }),
+      note: 'To start or join an ekogroup, contact ekogroups@ekoparty.org or see ekoparty.org/ekogroups. Activities can be submitted at /ekogroups/submit.',
+    })
+  }
+
   if (name === 'get_event_info') {
     const sections: Record<string, string> = {
       faq: EKO_FAQ,
@@ -153,7 +234,7 @@ const LANG_NAME: Record<string, string> = { es: 'Spanish (Argentina)', en: 'Engl
 function systemPrompt(lang: string): string {
   return `You are the assistant for eko.party, the community site for ekoparty — the hacker conference. ekoparty Buenos Aires 2026 (October 7-9, Centro de Convenciones) already took place; its talk agenda remains browsable. The site now lists community parties for the next edition: ekoparty Miami, May 2027 (exact dates not announced yet — only the month is confirmed). The site also offers an MCP server for programmatic access.
 
-Site pages you can point users to: /${lang} (parties), /${lang}/agenda (talk schedule), /${lang}/submit (submit a party), /${lang}/mcp (MCP server setup — clone github.com/infobyte/ekofiesta and configure Claude Desktop).
+Site pages you can point users to: /${lang} (Miami 2027 parties), /${lang}/agenda (BA 2026 talk schedule), /${lang}/ekogroups (shared monthly calendar of ekogroup activities + directory of local communities), /${lang}/ekogroups/submit (submit an ekogroup activity), /${lang}/past (archive of past editions, including the BA 2026 parties), /${lang}/submit (submit a party), /${lang}/mcp (MCP server setup — clone github.com/infobyte/ekofiesta and configure Claude Desktop).
 
 Rules:
 - ONLY answer questions about ekoparty, its agenda, parties, villages, logistics (tickets, venue, transport, hours), and this site. For anything else, briefly decline and redirect to ekoparty topics.

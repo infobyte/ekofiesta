@@ -43,7 +43,7 @@ export default async function Home({
       <SiteNav
         lang={lang}
         active="parties"
-        labels={{ parties: t.navParties, agenda: t.navAgenda, mcp: t.navMcp, past: t.navPast }}
+        labels={{ parties: t.navParties, agenda: t.navAgenda, mcp: t.navMcp, past: t.navPast, ekogroups: t.navEkogroups }}
       />
 
       {/* Hero */}

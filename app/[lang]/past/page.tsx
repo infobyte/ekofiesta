@@ -46,6 +46,7 @@ export default async function PastEditionsPage({
           agenda: dict.home.navAgenda,
           mcp: dict.home.navMcp,
           past: dict.home.navPast,
+          ekogroups: dict.home.navEkogroups,
         }}
       />
 

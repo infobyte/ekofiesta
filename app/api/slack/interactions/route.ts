@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifySlackRequest, buildPartyApprovedMessage } from '@/lib/slack'
-import { approveParty, rejectParty, getPartyById } from '@/lib/db'
+import { verifySlackRequest } from '@/lib/slack'
+import {
+  approveParty,
+  rejectParty,
+  getPartyById,
+  approveEkogroupActivity,
+  rejectEkogroupActivity,
+  getEkogroupActivityById,
+} from '@/lib/db'
+import { getEkogroup } from '@/lib/ekogroups'
 import querystring from 'querystring'
 
 export async function POST(request: NextRequest) {
@@ -28,6 +36,39 @@ export async function POST(request: NextRequest) {
     const action = slackPayload.actions[0]
     const [actionType, partyId] = action.value.split(':')
     const userId = slackPayload.user.id
+
+    // Ekogroup activity moderation (approve_act / reject_act)
+    if (actionType === 'approve_act' || actionType === 'reject_act') {
+      const activity = await getEkogroupActivityById(partyId)
+      if (!activity) {
+        return NextResponse.json({ error: 'Activity not found' }, { status: 404 })
+      }
+
+      const approved = actionType === 'approve_act'
+      const updated = approved
+        ? await approveEkogroupActivity(partyId, userId)
+        : await rejectEkogroupActivity(partyId, userId)
+
+      if (!updated) {
+        return NextResponse.json({ error: 'Failed to update activity status' }, { status: 500 })
+      }
+
+      const group = getEkogroup(activity.group_slug)
+      return NextResponse.json({
+        response_type: 'in_channel',
+        replace_original: true,
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `📅 *${activity.title}* (${group?.name || activity.group_slug})\n${approved ? '✅ APPROVED' : '❌ REJECTED'} by <@${userId}>`,
+            },
+          },
+        ],
+        text: `${approved ? '✅' : '❌'} Activity "${activity.title}" ${approved ? 'approved' : 'rejected'} by <@${userId}>`,
+      })
+    }
 
     // Get the party
     const party = await getPartyById(partyId)

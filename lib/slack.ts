@@ -1,5 +1,6 @@
 import crypto from 'crypto'
-import type { Party, SlackBlockKitMessage } from './types'
+import type { EkogroupActivity, Party, SlackBlockKitMessage } from './types'
+import { getEkogroup } from './ekogroups'
 
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET || ''
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL || ''
@@ -141,6 +142,79 @@ export function buildPartyApprovedMessage(
           text: `<${party.rsvp_url}|View Party>`,
         },
       },
+    ],
+  }
+}
+
+export function buildActivityPendingMessage(activity: EkogroupActivity): SlackBlockKitMessage {
+  const group = getEkogroup(activity.group_slug)
+  const groupName = group ? `${group.flag} ${group.name}` : activity.group_slug
+
+  const schedule =
+    activity.kind === 'monthly'
+      ? `Every month, day ${activity.day_of_month}` +
+        (activity.time_start ? ` · ${activity.time_start}${activity.time_end ? `-${activity.time_end}` : ''}` : '')
+      : `${new Date(activity.starts_at!).toLocaleString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}`
+
+  return {
+    text: `New ekogroup activity: ${activity.title}`,
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*New Ekogroup Activity*\n📅 *${activity.title}*`,
+        },
+      },
+      {
+        type: 'section',
+        fields: [
+          { type: 'mrkdwn', text: `*Group:*\n${groupName}` },
+          { type: 'mrkdwn', text: `*Type:*\n${activity.activity_type}` },
+          { type: 'mrkdwn', text: `*Schedule:*\n${schedule}` },
+          { type: 'mrkdwn', text: `*Venue:*\n${activity.venue || '—'}` },
+        ],
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*Description:*\n${activity.description || '—'}`,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*Submitted by:*\n${activity.submitter_name} <${activity.submitter_email}>`,
+        },
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: '✅ Approve' },
+            value: `approve_act:${activity.id}`,
+            action_id: `approve_act_${activity.id}`,
+            style: 'primary',
+          },
+          {
+            type: 'button',
+            text: { type: 'plain_text', text: '❌ Reject' },
+            value: `reject_act:${activity.id}`,
+            action_id: `reject_act_${activity.id}`,
+            style: 'danger',
+          },
+        ],
+      },
+      { type: 'divider' },
     ],
   }
 }
