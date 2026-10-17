@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getApprovedPartiesByEdition } from '@/lib/db'
-import type { Edition, Party, PartyByDay } from '@/lib/types'
+import { CURRENT_EDITION, type Edition, type Party, type PartyByDay } from '@/lib/types'
 import { getDictionary, hasLocale, intlLocale } from './dictionaries'
 import SiteNav from './site-nav'
 
@@ -45,7 +45,7 @@ export default async function Home({
   const t = dict.home
   const locale = intlLocale[lang]
 
-  const edition: Edition = 'ekoparty-ba-2026'
+  const edition: Edition = CURRENT_EDITION
   const parties = await getApprovedPartiesByEdition(edition)
   const grouped = groupPartiesByDay(parties, locale)
 

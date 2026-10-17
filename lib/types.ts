@@ -1,7 +1,10 @@
 export type Edition = 'ekoparty-ba-2026' | 'ekoparty-miami-2027'
 
 // Editions currently accepting party submissions
-export const OPEN_EDITIONS: Edition[] = ['ekoparty-ba-2026']
+export const OPEN_EDITIONS: Edition[] = ['ekoparty-miami-2027']
+
+// Edition shown on the homepage listing
+export const CURRENT_EDITION: Edition = 'ekoparty-miami-2027'
 
 export type PartyStatus = 'pending' | 'approved' | 'rejected'
 

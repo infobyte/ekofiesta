@@ -8,7 +8,7 @@
     "sourceNote": "Sample data — official source: ekoparty.org/agenda-2026/"
   },
   "home": {
-    "badge": "EkoParty · Buenos Aires 2026",
+    "badge": "EkoParty · Miami — May 2027",
     "title1": "Parties &",
     "title2": "Networking Events",
     "subtitle": "Every party, meetup and side event happening around EkoParty — in one place.",
@@ -57,8 +57,8 @@
     "success": "✅ Party submitted! It will appear on the site once approved.",
     "errorGeneric": "Failed to submit party. Please try again.",
     "edition": "Edition *",
-    "editionBA": "EkoParty Buenos Aires 2026",
-    "editionMiami": "EkoParty Miami 2027 — Coming soon",
+    "editionBA": "EkoParty Buenos Aires 2026 — Ended",
+    "editionMiami": "EkoParty Miami 2027 (May, date TBC)",
     "sectionEvent": "Event details",
     "eventName": "Event name *",
     "eventNamePlaceholder": "Red Team Happy Hour",

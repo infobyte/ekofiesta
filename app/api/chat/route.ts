@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createHash } from 'crypto'
 import { getApprovedPartiesByEdition, logChatExchange } from '@/lib/db'
+import { CURRENT_EDITION } from '@/lib/types'
 import { agenda } from '@/app/[lang]/agenda/mock-agenda'
 import { EKO_FAQ, EKO_GENERAL, EKO_VILLAGES } from '@/lib/eko-info'
 
@@ -35,7 +36,7 @@ const tools: Anthropic.Tool[] = [
   {
     name: 'get_parties',
     description:
-      'Get the list of approved parties for ekoparty Buenos Aires 2026. Call this when the user asks about parties, events, afterparties, where to go out, or RSVP links.',
+      'Get the list of approved parties for the current edition (ekoparty Miami, May 2027). Call this when the user asks about parties, events, afterparties, where to go out, or RSVP links.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
@@ -80,7 +81,7 @@ const tools: Anthropic.Tool[] = [
 
 async function runTool(name: string, input: any): Promise<string> {
   if (name === 'get_parties') {
-    const parties = await getApprovedPartiesByEdition('ekoparty-ba-2026')
+    const parties = await getApprovedPartiesByEdition(CURRENT_EDITION)
     if (parties.length === 0) return 'No approved parties listed yet.'
     return JSON.stringify(
       parties.map(p => ({
@@ -150,7 +151,7 @@ async function runTool(name: string, input: any): Promise<string> {
 const LANG_NAME: Record<string, string> = { es: 'Spanish (Argentina)', en: 'English', pt: 'Portuguese (Brazil)' }
 
 function systemPrompt(lang: string): string {
-  return `You are the assistant for eko.party, the community site for ekoparty 2026 — the hacker conference in Buenos Aires, October 7-9, 2026 (Centro de Convenciones). The site lists community parties around the conference, the talk agenda, and an MCP server for programmatic access.
+  return `You are the assistant for eko.party, the community site for ekoparty — the hacker conference. ekoparty Buenos Aires 2026 (October 7-9, Centro de Convenciones) already took place; its talk agenda remains browsable. The site now lists community parties for the next edition: ekoparty Miami, May 2027 (exact dates not announced yet — only the month is confirmed). The site also offers an MCP server for programmatic access.
 
 Site pages you can point users to: /${lang} (parties), /${lang}/agenda (talk schedule), /${lang}/submit (submit a party), /${lang}/mcp (MCP server setup — clone github.com/infobyte/ekofiesta and configure Claude Desktop).
 

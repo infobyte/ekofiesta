@@ -95,10 +95,10 @@ export default function SubmitForm({ t, lang }: { t: SubmitDict; lang: string })
           {/* Edition */}
           <div className="rounded-3xl border border-surface-border bg-white p-6 shadow-sm sm:p-8">
             <label className={labelClass}>{t.edition}</label>
-            <select name="edition" defaultValue="ekoparty-ba-2026" required className={inputClass}>
-              <option value="ekoparty-ba-2026">{t.editionBA}</option>
-              <option value="ekoparty-miami-2027" disabled>
-                {t.editionMiami}
+            <select name="edition" defaultValue="ekoparty-miami-2027" required className={inputClass}>
+              <option value="ekoparty-miami-2027">{t.editionMiami}</option>
+              <option value="ekoparty-ba-2026" disabled>
+                {t.editionBA}
               </option>
             </select>
           </div>
