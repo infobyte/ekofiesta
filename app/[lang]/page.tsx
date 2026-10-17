@@ -1,37 +1,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getApprovedPartiesByEdition } from '@/lib/db'
-import { CURRENT_EDITION, type Edition, type Party, type PartyByDay } from '@/lib/types'
+import { CURRENT_EDITION, type Edition } from '@/lib/types'
+import { groupPartiesByDay } from '@/lib/parties'
 import { getDictionary, hasLocale, intlLocale } from './dictionaries'
 import SiteNav from './site-nav'
 
 export const dynamic = 'force-dynamic'
-
-function groupPartiesByDay(parties: Party[], locale: string): PartyByDay[] {
-  const grouped = new Map<string, Party[]>()
-
-  parties.forEach(party => {
-    const dateKey = new Date(party.starts_at).toISOString().split('T')[0]
-    if (!grouped.has(dateKey)) {
-      grouped.set(dateKey, [])
-    }
-    grouped.get(dateKey)!.push(party)
-  })
-
-  return Array.from(grouped.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, dayParties]) => ({
-      date,
-      day: new Date(dayParties[0].starts_at).toLocaleDateString(locale, {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-      }),
-      parties: dayParties.sort(
-        (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
-      ),
-    }))
-}
 
 export default async function Home({
   params,
@@ -68,7 +43,7 @@ export default async function Home({
       <SiteNav
         lang={lang}
         active="parties"
-        labels={{ parties: t.navParties, agenda: t.navAgenda, mcp: t.navMcp }}
+        labels={{ parties: t.navParties, agenda: t.navAgenda, mcp: t.navMcp, past: t.navPast }}
       />
 
       {/* Hero */}

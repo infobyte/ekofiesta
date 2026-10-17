@@ -24,6 +24,7 @@
     "navParties": "Fiestas",
     "navAgenda": "Agenda",
     "navMcp": "MCP",
+    "navPast": "Ediciones anteriores",
     "footer": "Listado oficial de fiestas de EkoParty · No afiliado a los organizadores de cada fiesta"
   },
   "mcp": {
@@ -96,5 +97,12 @@
     "thinking": "Pensando…",
     "error": "Algo salió mal. Probá de nuevo.",
     "rateLimited": "Demasiados mensajes seguidos. Esperá un momento."
+  },
+  "past": {
+    "title1": "Ediciones",
+    "title2": "Anteriores",
+    "subtitle": "El archivo histórico de fiestas y eventos de las ediciones pasadas de EkoParty.",
+    "agendaLink": "Ver la agenda de charlas 2026",
+    "empty": "No hay fiestas archivadas para esta edición."
   }
 }

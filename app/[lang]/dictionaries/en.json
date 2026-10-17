@@ -24,6 +24,7 @@
     "navParties": "Parties",
     "navAgenda": "Schedule",
     "navMcp": "MCP",
+    "navPast": "Past editions",
     "footer": "EkoParty Official Party Listing · Not affiliated with individual party hosts"
   },
   "mcp": {
@@ -96,5 +97,12 @@
     "thinking": "Thinking…",
     "error": "Something went wrong. Try again.",
     "rateLimited": "Too many messages. Wait a moment."
+  },
+  "past": {
+    "title1": "Past",
+    "title2": "Editions",
+    "subtitle": "The historical archive of parties and events from previous EkoParty editions.",
+    "agendaLink": "See the 2026 talk agenda",
+    "empty": "No archived parties for this edition."
   }
 }

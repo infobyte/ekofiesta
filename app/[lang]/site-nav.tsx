@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import LanguageSwitcher from './language-switcher'
 
-export type NavLabels = { parties: string; agenda: string; mcp: string }
+export type NavLabels = { parties: string; agenda: string; mcp: string; past: string }
 
 export default function SiteNav({
   lang,
@@ -9,13 +9,14 @@ export default function SiteNav({
   labels,
 }: {
   lang: string
-  active: 'parties' | 'agenda' | 'mcp' | 'submit'
+  active: 'parties' | 'agenda' | 'mcp' | 'submit' | 'past'
   labels: NavLabels
 }) {
   const tabs = [
     { key: 'parties', href: `/${lang}`, label: labels.parties },
     { key: 'agenda', href: `/${lang}/agenda`, label: labels.agenda },
     { key: 'mcp', href: `/${lang}/mcp`, label: labels.mcp },
+    { key: 'past', href: `/${lang}/past`, label: labels.past },
   ] as const
 
   return (

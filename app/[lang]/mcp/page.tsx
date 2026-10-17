@@ -82,7 +82,7 @@ export default async function McpPage({ params }: { params: Params }) {
       <SiteNav
         lang={lang}
         active="mcp"
-        labels={{ parties: th.navParties, agenda: th.navAgenda, mcp: th.navMcp }}
+        labels={{ parties: th.navParties, agenda: th.navAgenda, mcp: th.navMcp, past: th.navPast }}
       />
 
       {/* Hero */}

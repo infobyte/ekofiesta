@@ -6,6 +6,9 @@ export const OPEN_EDITIONS: Edition[] = ['ekoparty-miami-2027']
 // Edition shown on the homepage listing
 export const CURRENT_EDITION: Edition = 'ekoparty-miami-2027'
 
+// Finished editions, shown in the past-editions archive (newest first)
+export const PAST_EDITIONS: Edition[] = ['ekoparty-ba-2026']
+
 export type PartyStatus = 'pending' | 'approved' | 'rejected'
 
 export interface Party {

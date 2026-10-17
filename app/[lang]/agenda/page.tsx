@@ -118,7 +118,7 @@ export default async function AgendaPage({ params }: { params: Params }) {
       <SiteNav
         lang={lang}
         active="agenda"
-        labels={{ parties: dict.home.navParties, agenda: dict.home.navAgenda, mcp: dict.home.navMcp }}
+        labels={{ parties: dict.home.navParties, agenda: dict.home.navAgenda, mcp: dict.home.navMcp, past: dict.home.navPast }}
       />
 
       {/* Hero */}
