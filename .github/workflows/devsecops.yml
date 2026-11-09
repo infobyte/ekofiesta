@@ -162,7 +162,8 @@ jobs:
         with:
           path: reports
       - name: Install faraday-cli
-        run: python3 -m pip install --quiet faraday-cli
+        # six: missing transitive dependency of faraday-cli 2.3.0 (import error without it)
+        run: python3 -m pip install --quiet faraday-cli six
       - name: Upload to Faraday
         env:
           FARADAY_URL: ${{ secrets.FARADAY_URL }}
