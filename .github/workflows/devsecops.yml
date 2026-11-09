@@ -1,15 +1,48 @@
 name: DevSecOps Security Scan
 
+# Scans no longer run on every push / pull request (famato, 2026-11):
+#   - workflow_dispatch  run the full suite by hand whenever needed
+#   - schedule           Mondays 04:00 UTC = 01:00 America/Argentina/Buenos_Aires,
+#                        but only if the repo had commits in the last 7 days
+#                        (the `gate` job short-circuits quiet weeks)
+# Note: GitHub disables scheduled workflows after 60 days without repo activity.
 on:
-  push:
-    branches: [ main, develop, '**' ]
-  pull_request:
-    branches: [ main, develop ]
   workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * 1'
+
+env:
+  DEVSECOPS_WINDOW_HOURS: 168
 
 jobs:
+  gate:
+    name: Weekly gate (commits in the last 7 days?)
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check last commit age
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "Manual run -> scanning"
+            echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          AGE_H=$(( ($(date +%s) - $(git log -1 --format=%ct)) / 3600 ))
+          echo "Last commit: $(git log -1 --format='%h %ci') — ${AGE_H}h ago (window: ${DEVSECOPS_WINDOW_HOURS}h)"
+          if [ "$AGE_H" -lt "$DEVSECOPS_WINDOW_HOURS" ]; then
+            echo "Recent commits found -> scanning"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No commits in the last ${DEVSECOPS_WINDOW_HOURS}h -> skipping this week"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   semgrep:
     name: Semgrep (SAST)
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
@@ -32,6 +65,8 @@ jobs:
 
   npm-audit:
     name: npm Audit (SCA)
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,6 +86,8 @@ jobs:
 
   gitleaks:
     name: Gitleaks (Secrets)
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -75,6 +112,8 @@ jobs:
 
   trivy:
     name: Trivy-fs (Dependency Scan)
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -94,6 +133,8 @@ jobs:
 
   sonarcloud:
     name: SonarCloud (Code Quality)
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -112,16 +153,17 @@ jobs:
 
   upload-to-faraday:
     name: Upload to Faraday
-    needs: [ semgrep, npm-audit, gitleaks, trivy, sonarcloud ]
+    needs: [ gate, semgrep, npm-audit, gitleaks, trivy, sonarcloud ]
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && needs.gate.outputs.run == 'true'
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: reports
       - name: Install faraday-cli
-        run: python3 -m pip install --quiet faraday-cli
+        # six: missing transitive dependency of faraday-cli 2.3.0 (import error without it)
+        run: python3 -m pip install --quiet faraday-cli six
       - name: Upload to Faraday
         env:
           FARADAY_URL: ${{ secrets.FARADAY_URL }}
