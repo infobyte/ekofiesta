@@ -3,8 +3,11 @@ import { submitParty, getPendingParties } from '@/lib/db'
 import { buildPartyPendingMessage, postToSlack } from '@/lib/slack'
 import { OPEN_EDITIONS } from '@/lib/types'
 import type { Edition, PartySubmission } from '@/lib/types'
+import { rateLimitSubmission } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimitSubmission(request)
+  if (limited) return limited
   try {
     const body = await request.json()
 
