@@ -3,6 +3,7 @@ import { submitEkogroupActivity } from '@/lib/db'
 import { buildActivityPendingMessage, postToSlack } from '@/lib/slack'
 import { getEkogroup } from '@/lib/ekogroups'
 import { ACTIVITY_TYPES, type ActivityType, type EkogroupActivitySubmission } from '@/lib/types'
+import { sanitizeHttpUrl } from '@/lib/url'
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,6 +55,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
 
+    const signupUrl = body.signup_url ? sanitizeHttpUrl(body.signup_url) : ''
+    if (signupUrl === null) {
+      return NextResponse.json({ error: 'signup_url must be a valid http(s) URL' }, { status: 400 })
+    }
+
     const timeRegex = /^\d{2}:\d{2}$/
     const cleanTime = (v: unknown) => (typeof v === 'string' && timeRegex.test(v) ? v : null)
 
@@ -64,7 +70,7 @@ export async function POST(request: NextRequest) {
       description: String(body.description || '').trim().slice(0, 500),
       venue: String(body.venue || '').trim().slice(0, 120),
       address: String(body.address || '').trim().slice(0, 200),
-      signup_url: String(body.signup_url || '').trim().slice(0, 300),
+      signup_url: signupUrl.slice(0, 300),
       kind,
       starts_at: kind === 'one_shot' ? body.starts_at : null,
       ends_at: kind === 'one_shot' ? body.ends_at : null,
