@@ -4,6 +4,10 @@ import { getEkogroup } from './ekogroups'
 
 const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET || ''
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL || ''
+const SLACK_MODERATOR_IDS = (process.env.SLACK_MODERATOR_IDS || '')
+  .split(',')
+  .map((id) => id.trim())
+  .filter(Boolean)
 
 export function verifySlackRequest(
   timestamp: string,
@@ -11,18 +15,39 @@ export function verifySlackRequest(
   body: string
 ): boolean {
   if (!SLACK_SIGNING_SECRET) {
-    console.warn('SLACK_SIGNING_SECRET not configured, skipping verification')
-    return true // Allow in development
+    console.error('SLACK_SIGNING_SECRET not configured, rejecting request')
+    return false // Fail closed in all environments
+  }
+
+  // Reject stale or replayed requests (5-minute window)
+  const requestTime = Number(timestamp)
+  const now = Math.floor(Date.now() / 1000)
+  if (!Number.isFinite(requestTime) || Math.abs(now - requestTime) > 60 * 5) {
+    return false
   }
 
   const baseString = `v0:${timestamp}:${body}`
   const hmac = crypto.createHmac('sha256', SLACK_SIGNING_SECRET)
   const computedSignature = 'v0=' + hmac.update(baseString).digest('hex')
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(computedSignature)
-  )
+  const sigBuf = Buffer.from(signature)
+  const computedBuf = Buffer.from(computedSignature)
+  if (sigBuf.length !== computedBuf.length) {
+    return false
+  }
+
+  return crypto.timingSafeEqual(sigBuf, computedBuf)
+}
+
+export function isAuthorizedModerator(userId: unknown): boolean {
+  if (typeof userId !== 'string' || userId === '') {
+    return false
+  }
+  if (SLACK_MODERATOR_IDS.length === 0) {
+    console.error('SLACK_MODERATOR_IDS not configured, rejecting moderation action')
+    return false
+  }
+  return SLACK_MODERATOR_IDS.includes(userId)
 }
 
 export function buildPartyPendingMessage(party: Party): SlackBlockKitMessage {
