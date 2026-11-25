@@ -3,8 +3,11 @@ import { submitEkogroupActivity } from '@/lib/db'
 import { buildActivityPendingMessage, postToSlack } from '@/lib/slack'
 import { getEkogroup } from '@/lib/ekogroups'
 import { ACTIVITY_TYPES, type ActivityType, type EkogroupActivitySubmission } from '@/lib/types'
+import { rateLimitSubmission } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimitSubmission(request)
+  if (limited) return limited
   try {
     const body = await request.json()
 
