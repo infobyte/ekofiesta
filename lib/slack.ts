@@ -25,6 +25,19 @@ export function verifySlackRequest(
   )
 }
 
+// Slack mrkdwn only treats &, < and > as control characters; escape them so
+// user-submitted text cannot create links, mentions or broadcasts.
+export function escapeMrkdwn(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function escapeSlackUrl(value: unknown): string {
+  return escapeMrkdwn(value).replace(/\|/g, '%7C')
+}
+
 export function buildPartyPendingMessage(party: Party): SlackBlockKitMessage {
   const formatTime = (iso: string) => {
     const date = new Date(iso)
@@ -37,13 +50,13 @@ export function buildPartyPendingMessage(party: Party): SlackBlockKitMessage {
   }
 
   return {
-    text: `New party submission: ${party.name}`,
+    text: `New party submission: ${escapeMrkdwn(party.name)}`,
     blocks: [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*New Party Submission*\n🎉 *${party.name}*`,
+          text: `*New Party Submission*\n🎉 *${escapeMrkdwn(party.name)}*`,
         },
       },
       {
@@ -51,11 +64,11 @@ export function buildPartyPendingMessage(party: Party): SlackBlockKitMessage {
         fields: [
           {
             type: 'mrkdwn',
-            text: `*Edition:*\n${party.edition}`,
+            text: `*Edition:*\n${escapeMrkdwn(party.edition)}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Host:*\n${party.host}`,
+            text: `*Host:*\n${escapeMrkdwn(party.host)}`,
           },
           {
             type: 'mrkdwn',
@@ -67,11 +80,11 @@ export function buildPartyPendingMessage(party: Party): SlackBlockKitMessage {
           },
           {
             type: 'mrkdwn',
-            text: `*Venue:*\n${party.venue}`,
+            text: `*Venue:*\n${escapeMrkdwn(party.venue)}`,
           },
           {
             type: 'mrkdwn',
-            text: `*Address:*\n${party.address}`,
+            text: `*Address:*\n${escapeMrkdwn(party.address)}`,
           },
         ],
       },
@@ -79,14 +92,14 @@ export function buildPartyPendingMessage(party: Party): SlackBlockKitMessage {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*Description:*\n${party.description}`,
+          text: `*Description:*\n${escapeMrkdwn(party.description)}`,
         },
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*Submitted by:*\n${party.submitter_name} <${party.submitter_email}>`,
+          text: `*Submitted by:*\n${escapeMrkdwn(party.submitter_name)} &lt;${escapeMrkdwn(party.submitter_email)}&gt;`,
         },
       },
       {
@@ -126,20 +139,20 @@ export function buildPartyApprovedMessage(
   moderator: string
 ): SlackBlockKitMessage {
   return {
-    text: `Party approved: ${party.name}`,
+    text: `Party approved: ${escapeMrkdwn(party.name)}`,
     blocks: [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `✅ *${party.name}* approved by <@${moderator}>`,
+          text: `✅ *${escapeMrkdwn(party.name)}* approved by <@${moderator}>`,
         },
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `<${party.rsvp_url}|View Party>`,
+          text: `<${escapeSlackUrl(party.rsvp_url)}|View Party>`,
         },
       },
     ],
@@ -163,36 +176,36 @@ export function buildActivityPendingMessage(activity: EkogroupActivity): SlackBl
         })}`
 
   return {
-    text: `New ekogroup activity: ${activity.title}`,
+    text: `New ekogroup activity: ${escapeMrkdwn(activity.title)}`,
     blocks: [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*New Ekogroup Activity*\n📅 *${activity.title}*`,
+          text: `*New Ekogroup Activity*\n📅 *${escapeMrkdwn(activity.title)}*`,
         },
       },
       {
         type: 'section',
         fields: [
-          { type: 'mrkdwn', text: `*Group:*\n${groupName}` },
-          { type: 'mrkdwn', text: `*Type:*\n${activity.activity_type}` },
-          { type: 'mrkdwn', text: `*Schedule:*\n${schedule}` },
-          { type: 'mrkdwn', text: `*Venue:*\n${activity.venue || '—'}` },
+          { type: 'mrkdwn', text: `*Group:*\n${escapeMrkdwn(groupName)}` },
+          { type: 'mrkdwn', text: `*Type:*\n${escapeMrkdwn(activity.activity_type)}` },
+          { type: 'mrkdwn', text: `*Schedule:*\n${escapeMrkdwn(schedule)}` },
+          { type: 'mrkdwn', text: `*Venue:*\n${escapeMrkdwn(activity.venue || '—')}` },
         ],
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*Description:*\n${activity.description || '—'}`,
+          text: `*Description:*\n${escapeMrkdwn(activity.description || '—')}`,
         },
       },
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*Submitted by:*\n${activity.submitter_name} <${activity.submitter_email}>`,
+          text: `*Submitted by:*\n${escapeMrkdwn(activity.submitter_name)} &lt;${escapeMrkdwn(activity.submitter_email)}&gt;`,
         },
       },
       {
