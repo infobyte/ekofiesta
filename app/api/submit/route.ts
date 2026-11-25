@@ -3,6 +3,7 @@ import { submitParty, getPendingParties } from '@/lib/db'
 import { buildPartyPendingMessage, postToSlack } from '@/lib/slack'
 import { OPEN_EDITIONS } from '@/lib/types'
 import type { Edition, PartySubmission } from '@/lib/types'
+import { sanitizeHttpUrl } from '@/lib/url'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,13 +23,13 @@ export async function POST(request: NextRequest) {
       'submitter_email',
     ]
 
-    for (const field of required) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { error: `Missing required field: ${field}` },
-          { status: 400 }
-        )
-      }
+    const missing = required.filter((field) => !body[field])
+    if (missing.length > 0) {
+      console.warn('submit validation failed, missing fields:', missing)
+      return NextResponse.json(
+        { error: 'Invalid submission: required fields are missing' },
+        { status: 400 }
+      )
     }
 
     // Only editions open for submissions (Miami 2027 is announced but not open yet)
@@ -58,6 +59,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const rsvpUrl = sanitizeHttpUrl(body.rsvp_url)
+    if (!rsvpUrl) {
+      return NextResponse.json(
+        { error: 'rsvp_url must be a valid http(s) URL' },
+        { status: 400 }
+      )
+    }
+
     // Create submission
     const submission: PartySubmission = {
       edition: body.edition,
@@ -68,7 +77,7 @@ export async function POST(request: NextRequest) {
       description: body.description?.trim() || '',
       starts_at: body.starts_at,
       ends_at: body.ends_at,
-      rsvp_url: body.rsvp_url.trim(),
+      rsvp_url: rsvpUrl,
       tags: body.tags || [],
       submitter_name: body.submitter_name.trim(),
       submitter_email: body.submitter_email.trim(),
