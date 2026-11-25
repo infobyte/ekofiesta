@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifySlackRequest } from '@/lib/slack'
+import { verifySlackRequest, isAuthorizedModerator } from '@/lib/slack'
 import {
   approveParty,
   rejectParty,
@@ -36,6 +36,10 @@ export async function POST(request: NextRequest) {
     const action = slackPayload.actions[0]
     const [actionType, partyId] = action.value.split(':')
     const userId = slackPayload.user.id
+
+    if (!isAuthorizedModerator(userId)) {
+      return NextResponse.json({ error: 'Unauthorized moderator' }, { status: 403 })
+    }
 
     // Ekogroup activity moderation (approve_act / reject_act)
     if (actionType === 'approve_act' || actionType === 'reject_act') {
