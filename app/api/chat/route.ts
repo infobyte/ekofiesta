@@ -11,13 +11,13 @@ import { EKOGROUPS, getEkogroup } from '@/lib/ekogroups'
 import { agenda } from '@/app/[lang]/agenda/mock-agenda'
 import { EKO_FAQ, EKO_GENERAL, EKO_VILLAGES } from '@/lib/eko-info'
 
-// ── Rate limiting (per IP, in-memory — best effort on serverless) ────────────
+// ── Rate limiting (per IP, shared via Upstash REST; in-memory fallback) ──────
 
 const RATE_LIMIT_PER_MIN = 10
 const RATE_LIMIT_PER_DAY = 100
 const hits = new Map<string, number[]>()
 
-function isRateLimited(ip: string): boolean {
+function isRateLimitedLocal(ip: string): boolean {
   const now = Date.now()
   const windowDay = now - 24 * 60 * 60 * 1000
   const windowMin = now - 60 * 1000
@@ -33,6 +33,44 @@ function isRateLimited(ip: string): boolean {
   prev.push(now)
   hits.set(ip, prev)
   return false
+}
+
+async function isRateLimitedShared(ip: string): Promise<boolean | null> {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) return null
+
+  const now = Date.now()
+  const minKey = `ratelimit:chat:min:${ip.slice(0, 64)}:${Math.floor(now / 60000)}`
+  const dayKey = `ratelimit:chat:day:${ip.slice(0, 64)}:${Math.floor(now / 86400000)}`
+
+  try {
+    const res = await fetch(`${url.replace(/\/$/, '')}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([
+        ['INCR', minKey],
+        ['EXPIRE', minKey, 120],
+        ['INCR', dayKey],
+        ['EXPIRE', dayKey, 90000],
+      ]),
+      signal: AbortSignal.timeout(2000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    const perMin = Number(data?.[0]?.result)
+    const perDay = Number(data?.[2]?.result)
+    if (!Number.isFinite(perMin) || !Number.isFinite(perDay)) return null
+    return perMin > RATE_LIMIT_PER_MIN || perDay > RATE_LIMIT_PER_DAY
+  } catch (err) {
+    console.error('Shared rate limiter failed, using in-memory fallback:', err)
+    return null
+  }
+}
+
+async function isRateLimited(ip: string): Promise<boolean> {
+  const shared = await isRateLimitedShared(ip)
+  return shared ?? isRateLimitedLocal(ip)
 }
 
 // ── Tools ────────────────────────────────────────────────────────────────────
@@ -252,7 +290,7 @@ const MAX_TOOL_ROUNDS = 4
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(ip)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
