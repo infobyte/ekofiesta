@@ -100,7 +100,7 @@ export async function submitParty(submission: PartySubmission): Promise<Party | 
 
 export async function getApprovedPartiesByEdition(edition: Edition): Promise<Party[]> {
   const { data, error } = await getSupabase()
-    .from('parties')
+    .from('public_parties')
     .select('*')
     .eq('edition', edition)
     .eq('status', 'approved')
